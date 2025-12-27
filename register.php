@@ -43,7 +43,12 @@
 
     <section class="login">
         <div class="login-box">
+            <a href="get-started.html" class="back-link">
+                <i class="fa-solid fa-arrow-left"></i> Go Back
+            </a>
             <h2>Register</h2>
+            <p>Teach Better with ClassMate</p>
+
             <form action="php/register_action.php" method="POST">
                 <div class="input-group">
                     <i class="fa-solid fa-user"></i>
@@ -54,6 +59,10 @@
                     <input type="password" name="password" placeholder="Create Password" required>
                 </div>
                 <button type="submit" class="btn btn-primary">Register</button>
+                <p style="margin-bottom: 10px; font-size: 12px;">Already have an account? <a
+                        style="text-decoration: underline; color: var(--primary);"
+                        href="instructor-login.html">Login</a></p>
+                <button class="btn btn-primary" onclick="window.location.href='instructor-login.html'">Register</button>
             </form>
         </div>
     </section>
