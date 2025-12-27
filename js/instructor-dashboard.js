@@ -28,11 +28,16 @@ function showFeedback(type, title, message) {
 }
 
 function closeFeedback() {
-    document.getElementById('universalModal').style.display = 'none';
-    
-    // Reset the footer to its default "Acknowledge" button state
-    const footer = document.getElementById('modalFooter') || document.querySelector('.feedback-btn').parentElement;
-    footer.innerHTML = `<button class="feedback-btn" onclick="closeFeedback()">Acknowledge</button>`;
+    <div id="universalModal" class="modal-overlay" style="display: none;">
+    <div id="feedbackCard" class="feedback-card">
+        <div id="feedbackIcon" class="feedback-icon"></div>
+        <h2 id="modalTitle" style="margin-bottom: 10px; color: #1e293b;"></h2>
+        <p id="modalMsg" style="color: #64748b;"></p>
+        <div id="modalFooter">
+            <button class="feedback-btn" onclick="closeFeedback()">Acknowledge</button>
+        </div>
+    </div>
+</div>
 }
 
 document
