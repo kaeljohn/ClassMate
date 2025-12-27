@@ -79,7 +79,9 @@ $result = $conn->query($sql);
                             Analytics</a></li>
 
                 </ul>
-                <button onclick="openEnrollment(<?php echo $row['section_id']; ?>)">Enroll Students</button>
+                <div class="nav-btn" onclick="openEnrollmentModal()">
+                    <i class="fa-solid fa-plus-circle"></i> Enroll a Student
+                </div>
             </nav>
 
             <main class="content-area">
