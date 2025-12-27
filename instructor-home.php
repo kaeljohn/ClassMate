@@ -32,8 +32,6 @@ $result = $conn->query($sql);
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/dashboard.css">
 
-    <script src="js/dashboard.js"></script>
-
     <style>
         .table-container {
             overflow-x: auto;
@@ -300,7 +298,13 @@ $result = $conn->query($sql);
                             <h2><i class="fa-solid fa-user-plus"></i> Quick Register</h2>
                             <button class="close-btn" onclick="closeAddStudentModal()">&times;</button>
                         </div>
-                        <form action="php/add_new_student.php" method="POST">
+
+                        <div id="modalError"
+                            style="display:none; background: #fee2e2; color: #dc2626; padding: 10px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #ef4444; font-size: 0.9rem;">
+                            <i class="fa-solid fa-circle-exclamation"></i> <span id="errorText"></span>
+                        </div>
+
+                        <form id="quickRegisterForm" action="php/add_new_student.php" method="POST">
                             <div class="name-row">
                                 <div class="form-group">
                                     <label>Last Name *</label>
@@ -325,7 +329,7 @@ $result = $conn->query($sql);
                             </div>
 
                             <div class="modal-footer">
-                                <button type="submit" class="btn btn-primary">Register Student</button>
+                                <button type="submit" id="regBtn" class="btn btn-primary">Register Student</button>
                             </div>
                         </form>
                     </div>
@@ -364,6 +368,47 @@ $result = $conn->query($sql);
             });
         }
 
+        document.getElementById('quickRegisterForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const form = this;
+            const btn = document.getElementById('regBtn');
+            const errorDiv = document.getElementById('modalError');
+            const errorText = document.getElementById('errorText');
+
+            // UI Feedback: Loading state
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Checking...';
+            errorDiv.style.display = 'none';
+
+            const formData = new FormData(form);
+
+            fetch('php/add_new_student.php', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'exists') {
+                        // Stay in modal, show error
+                        errorText.innerText = "This student is already registered.";
+                        errorDiv.style.display = 'block';
+                        btn.disabled = false;
+                        btn.innerText = 'Register Student';
+                    } else if (data.status === 'success') {
+                        // Only close and refresh if successful
+                        alert("Student Registered Successfully!");
+                        location.reload();
+                    }
+                })
+                .catch(err => {
+                    errorText.innerText = "Connection error. Please try again.";
+                    errorDiv.style.display = 'block';
+                    btn.disabled = false;
+                    btn.innerText = 'Register Student';
+                });
+        });
+
         // Modal Controls
         function openAddSubjectModal() { document.getElementById('addSubjectModal').style.display = 'block'; }
         function closeAddSubjectModal() { document.getElementById('addSubjectModal').style.display = 'none'; }
@@ -372,22 +417,6 @@ $result = $conn->query($sql);
         function openAddStudentModal() { document.getElementById('addStudentModal').style.display = 'block'; }
         function closeAddStudentModal() { document.getElementById('addStudentModal').style.display = 'none'; }
     </script>
-
-    <div id="universalModal" class="modal-overlay" style="display: none;">
-        <div id="feedbackCard" class="feedback-card">
-            <div class="feedback-header">
-                <div id="feedbackIcon" class="feedback-icon"></div>
-                <button class="modal-close-icon" onclick="closeFeedback()">&times;</button>
-            </div>
-            <div class="feedback-content">
-                <h2 id="modalTitle"></h2>
-                <p id="modalMsg"></p>
-            </div>
-            <div class="feedback-footer">
-                <button class="feedback-btn" onclick="closeFeedback()">Acknowledge</button>
-            </div>
-        </div>
-    </div>
 </body>
 
 </html>
