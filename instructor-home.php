@@ -1,14 +1,15 @@
 <?php
 session_start();
+$inst = $_SESSION['instructor_name'];
+$sql = "SELECT * FROM subjects WHERE instructor_id = '$inst'";
+$result = $conn->query($sql);
+
 if (!isset($_SESSION['instructor_name'])) {
     // If not logged in, kick them back to the login page
     header("Location: instructor-login.php");
     exit();
 }
-
-$inst = $_SESSION['instructor_name'];
-$sql = "SELECT * FROM subjects WHERE instructor_id = '$inst'";
-$result = $conn->query($sql);
+$current_instructor = $_SESSION['instructor_name'];
 ?>
 
 <!DOCTYPE html>
@@ -106,14 +107,14 @@ $result = $conn->query($sql);
                                     </tr>
                                 </thead>
                                 <tbody id="subjectsTableBody">
-                                    <?php if ($result && $result->num_rows > 0): ?>
+                                    <?php if ($result->num_rows > 0): ?>
                                         <?php while ($row = $result->fetch_assoc()): ?>
                                             <tr>
-                                                <td><?php echo htmlspecialchars($row['subject_code']); ?></td>
-                                                <td><?php echo htmlspecialchars($row['subject_name']); ?></td>
-                                                <td>0</td>
+                                                <td><?php echo $row['course_code']; ?></td>
+                                                <td><?php echo $row['section_name']; ?></td>
+                                                <td><?php echo $row['semester']; ?></td>
                                                 <td>
-                                                    <button class="btn btn-sm btn-info">View Details</button>
+                                                    <button class="btn btn-sm btn-info">View Students</button>
                                                     <button class="btn btn-sm btn-danger">Delete</button>
                                                 </td>
                                             </tr>
@@ -123,7 +124,7 @@ $result = $conn->query($sql);
                                             <td colspan="4" style="text-align: center; padding: 2rem; color: #999;">
                                                 <i class="fa-solid fa-book"
                                                     style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
-                                                No subjects found. Click "Add Subject" to get started.
+                                                No sections found. Click "Add Section" to get started.
                                             </td>
                                         </tr>
                                     <?php endif; ?>
