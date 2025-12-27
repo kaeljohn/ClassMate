@@ -66,6 +66,32 @@ $result = $conn->query($sql);
 </head>
 
 <body>
+    <?php if (isset($_GET['error']) || isset($_GET['status'])): ?>
+        <div id="statusOverlay" class="status-overlay">
+            <div class="status-card <?php echo isset($_GET['error']) ? 'error-card' : 'success-card'; ?>">
+                <div class="status-icon">
+                    <?php if (isset($_GET['error'])): ?>
+                        <i class="fa-solid fa-circle-xmark"></i>
+                    <?php else: ?>
+                        <i class="fa-solid fa-circle-check"></i>
+                    <?php endif; ?>
+                </div>
+                <div class="status-text">
+                    <h3><?php echo isset($_GET['error']) ? 'Registration Failed' : 'Success!'; ?></h3>
+                    <p>
+                        <?php
+                        if ($_GET['error'] == 'exists')
+                            echo "This student is already registered in the system.";
+                        elseif ($_GET['status'] == 'success')
+                            echo "Student successfully added and ID generated.";
+                        ?>
+                    </p>
+                </div>
+                <button class="status-btn" onclick="closeStatusOverlay()">Dismiss</button>
+            </div>
+        </div>
+    <?php endif; ?>
+
     <header>
         <h1>
             <a href="index.html" class="logo-link">
@@ -92,22 +118,6 @@ $result = $conn->query($sql);
                 class="shape-fill"></path>
         </svg>
     </div>
-
-    <?php if (isset($_GET['error']) && $_GET['error'] == 'exists'): ?>
-        <div
-            style="background: #ffebee; color: #c62828; padding: 15px; margin: 20px; border-radius: 8px; border-left: 5px solid #ef5350;">
-            <i class="fa-solid fa-circle-exclamation"></i>
-            <strong>Registration Failed:</strong> A student with that name is already registered in the system.
-        </div>
-    <?php endif; ?>
-
-    <?php if (isset($_GET['status']) && $_GET['status'] == 'success'): ?>
-        <div
-            style="background: #e8f5e9; color: #2e7d32; padding: 15px; margin: 20px; border-radius: 8px; border-left: 5px solid #66bb6a;">
-            <i class="fa-solid fa-circle-check"></i>
-            <strong>Success:</strong> Student registered and ID generated!
-        </div>
-    <?php endif; ?>
 
     <section class="main-dashboard">
         <div class="dashboard-box">
