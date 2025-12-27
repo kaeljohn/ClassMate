@@ -226,11 +226,10 @@ $result = $conn->query($sql);
                                                     </button>
                                                 </td>
                                             </tr>
-                                        <?php endwhile; else: ?>
+                                        <?php endwhile; endif; ?>
                                         <tr class="no-data">
                                             <td colspan="3">No subjects found.</td>
                                         </tr>
-                                    <?php endif; ?>
                                 </tbody>
                             </table>
                         </div>
