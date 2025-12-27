@@ -148,11 +148,11 @@ $result = $conn->query($sql);
                         <form action="php/add_subject.php" method="POST">
                             <div class="form-group">
                                 <label>Subject Code</label>
-                                <input type="text" name="sub_code" placeholder="e.g., DCIT 24" required>
+                                <input type="text" name="subjectCode" placeholder="e.g., DCIT 24" required>
                             </div>
                             <div class="form-group">
                                 <label>Subject Name</label>
-                                <input type="text" name="sub_name" placeholder="e.g., Information Management" required>
+                                <input type="text" name="subjectName" placeholder="e.g., Information Management" required>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary"
