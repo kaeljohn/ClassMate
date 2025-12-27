@@ -79,9 +79,9 @@ $result = $conn->query($sql);
                             Analytics</a></li>
                 </ul>
 
-                <div class="nav-btn" onclick="openEnrollmentModal()">
-                    <a href="#" class="nav-btn" data-target="enrollment"><i class="fa-solid fa-plus-circle"></i>
-                        Enroll a Student</a></li>
+                <div class="sidebar-bottom">
+                    <a href="#" class="nav-btn" data-target="enrollment" onclick="openEnrollmentModal()"><i class="fa-solid fa-circle-plus"></i> Enroll
+                        a Student</a>
                 </div>
             </nav>
 
