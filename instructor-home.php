@@ -211,8 +211,12 @@ $result = $conn->query($sql);
                                             </tr>
                                         <?php endwhile;
                                     else: ?>
-                                        <tr>
-                                            <td colspan="5" style="text-align:center;">No sections created yet.</td>
+                                        <tr class="no-data">
+                                            <td colspan="6" style="text-align: center; padding: 2rem; color: #999;">
+                                                <i class="fa-solid fa-book"
+                                                    style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                                                No sections created yet.
+                                            </td>
                                         </tr>
                                     <?php endif; ?>
                                 </tbody>
@@ -220,6 +224,51 @@ $result = $conn->query($sql);
                         </div>
                     </div>
                 </section>
+
+                <div id="addSectionModal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2><i class="fa-solid fa-users"></i> Create New Section</h2>
+                            <button class="close-btn" onclick="closeAddSectionModal()">&times;</button>
+                        </div>
+                        <form action="php/add_section.php" method="POST">
+                            <div class="form-group">
+                                <label>Select Subject</label>
+                                <select name="subject_id" required>
+                                    <option value="">-- Choose a Subject --</option>
+                                    <?php
+                                    // Re-run query to populate dropdown
+                                    $subjects_dropdown = $conn->query("SELECT * FROM subjects WHERE instructor_id = '$current_instructor'");
+                                    while ($sub = $subjects_dropdown->fetch_assoc()): ?>
+                                        <option value="<?php echo $sub['subject_id']; ?>">
+                                            <?php echo htmlspecialchars($sub['subject_code'] . " - " . $sub['subject_name']); ?>
+                                        </option>
+                                    <?php endwhile; ?>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Section Name</label>
+                                <input type="text" name="section_name" placeholder="e.g., BSIT 2-1" required>
+                            </div>
+                            <div class="form-group">
+                                <label>School Year</label>
+                                <input type="text" name="school_year" placeholder="2024-2025" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Semester</label>
+                                <select name="semester" required>
+                                    <option value="1st Semester">1st Semester</option>
+                                    <option value="2nd Semester">2nd Semester</option>
+                                </select>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary"
+                                    onclick="closeAddSectionModal()">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Create Section</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
 
                 <section id="attendance" class="content-section" style="display: none;">
                     <div class="dashboard-display">
@@ -303,51 +352,6 @@ $result = $conn->query($sql);
                         </div>
                     </div>
                 </section>
-
-                <div id="addSectionModal" class="modal">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h2><i class="fa-solid fa-users"></i> Create New Section</h2>
-                            <button class="close-btn" onclick="closeAddSectionModal()">&times;</button>
-                        </div>
-                        <form action="php/add_section.php" method="POST">
-                            <div class="form-group">
-                                <label>Select Subject</label>
-                                <select name="subject_id" required>
-                                    <option value="">-- Choose a Subject --</option>
-                                    <?php
-                                    // Re-run query to populate dropdown
-                                    $subjects_dropdown = $conn->query("SELECT * FROM subjects WHERE instructor_id = '$current_instructor'");
-                                    while ($sub = $subjects_dropdown->fetch_assoc()): ?>
-                                        <option value="<?php echo $sub['subject_id']; ?>">
-                                            <?php echo htmlspecialchars($sub['subject_code'] . " - " . $sub['subject_name']); ?>
-                                        </option>
-                                    <?php endwhile; ?>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Section Name</label>
-                                <input type="text" name="section_name" placeholder="e.g., BSIT 2-1" required>
-                            </div>
-                            <div class="form-group">
-                                <label>School Year</label>
-                                <input type="text" name="school_year" placeholder="2024-2025" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Semester</label>
-                                <select name="semester" required>
-                                    <option value="1st Semester">1st Semester</option>
-                                    <option value="2nd Semester">2nd Semester</option>
-                                </select>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary"
-                                    onclick="closeAddSectionModal()">Cancel</button>
-                                <button type="submit" class="btn btn-primary">Create Section</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
 
 
                 <section id="attendance" class="content-section" style="display: none;">
