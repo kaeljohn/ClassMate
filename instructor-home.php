@@ -32,10 +32,13 @@ $result = $conn->query($sql);
     <link rel="stylesheet" href="css/dashboard.css">
 
     <style>
-        /* Quick styles for the new enrollment table UI */
         .table-container { overflow-x: auto; margin-top: 20px; }
         .student-checkbox { cursor: pointer; transform: scale(1.2); }
         .search-box input { padding: 8px 35px 8px 15px; border-radius: 20px; border: 1px solid #ddd; }
+        /* Flex styling for the name row in the modal */
+        .name-row { display: flex; gap: 10px; }
+        .name-row .form-group { flex: 2; }
+        .name-row .form-group.mi { flex: 0.5; }
     </style>
 </head>
 
@@ -166,22 +169,27 @@ $result = $conn->query($sql);
                                     <tr>
                                         <th><input type="checkbox" id="selectAllStudents" onclick="toggleSelectAll(this)"> Select All</th>
                                         <th>Student Number</th>
-                                        <th>Full Name</th>
+                                        <th>Last Name</th>
+                                        <th>First Name</th>
+                                        <th>M.I.</th>
                                         <th>Email</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php
-                                    $allStudents = $conn->query("SELECT * FROM students ORDER BY full_name ASC");
+                                    // Modified Query to order by Last Name
+                                    $allStudents = $conn->query("SELECT * FROM students ORDER BY last_name ASC");
                                     if ($allStudents->num_rows > 0): while ($st = $allStudents->fetch_assoc()): ?>
                                         <tr>
                                             <td><input type="checkbox" class="student-checkbox" value="<?php echo $st['student_id']; ?>"></td>
                                             <td><?php echo htmlspecialchars($st['student_number']); ?></td>
-                                            <td><?php echo htmlspecialchars($st['full_name']); ?></td>
+                                            <td><?php echo htmlspecialchars($st['last_name']); ?></td>
+                                            <td><?php echo htmlspecialchars($st['first_name']); ?></td>
+                                            <td><?php echo htmlspecialchars($st['middle_initial']); ?></td>
                                             <td><?php echo htmlspecialchars($st['email']); ?></td>
                                         </tr>
                                     <?php endwhile; else: ?>
-                                        <tr class="no-data"><td colspan="4">No students in database.</td></tr>
+                                        <tr class="no-data"><td colspan="6">No students in database.</td></tr>
                                     <?php endif; ?>
                                 </tbody>
                             </table>
@@ -235,10 +243,31 @@ $result = $conn->query($sql);
                             <button class="close-btn" onclick="closeAddStudentModal()">&times;</button>
                         </div>
                         <form action="php/add_new_student.php" method="POST">
-                            <div class="form-group"><label>Full Name</label><input type="text" name="full_name" placeholder="Last Name, First Name" required></div>
-                            <div class="form-group"><label>Student Number</label><input type="text" name="student_number" required></div>
-                            <div class="form-group"><label>Email</label><input type="email" name="email" required></div>
-                            <div class="modal-footer"><button type="submit" class="btn btn-primary">Save Student</button></div>
+                            <div class="name-row">
+                                <div class="form-group">
+                                    <label>Last Name</label>
+                                    <input type="text" name="last_name" placeholder="e.g. Dela Cruz" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>First Name</label>
+                                    <input type="text" name="first_name" placeholder="e.g. Juan" required>
+                                </div>
+                                <div class="form-group mi">
+                                    <label>M.I.</label>
+                                    <input type="text" name="middle_initial" maxlength="2" placeholder="P.">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Student Number</label>
+                                <input type="text" name="student_number" placeholder="2024-00000" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email Address</label>
+                                <input type="email" name="email" placeholder="student@cvsu.edu.ph" required>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary">Register Student</button>
+                            </div>
                         </form>
                     </div>
                 </div>

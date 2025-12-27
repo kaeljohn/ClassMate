@@ -7,8 +7,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $student_number = $conn->real_escape_string($_POST['student_number']);
     $email = $conn->real_escape_string($_POST['email']);
 
-    $sql = "INSERT INTO students (full_name, student_number, email) 
-            VALUES ('$full_name', '$student_number', '$email')";
+    $sql = "INSERT INTO students (last_name, first_name, middle_name, student_number, email) 
+        VALUES ('$last_name', '$first_name', '$middle_name', '$student_number', '$email')";
 
     if ($conn->query($sql) === TRUE) {
         header("Location: ../instructor-home.php?status=student_created");
