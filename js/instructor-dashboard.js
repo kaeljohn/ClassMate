@@ -28,7 +28,11 @@ function showFeedback(type, title, message) {
 }
 
 function closeFeedback() {
-  document.getElementById("universalModal").style.display = "none";
+    document.getElementById('universalModal').style.display = 'none';
+    
+    // Reset the footer to its default "Acknowledge" button state
+    const footer = document.getElementById('modalFooter') || document.querySelector('.feedback-btn').parentElement;
+    footer.innerHTML = `<button class="feedback-btn" onclick="closeFeedback()">Acknowledge</button>`;
 }
 
 document
@@ -118,28 +122,26 @@ if (sectionForm) {
 }
 
 function confirmDelete(id, code) {
-  const modal = document.getElementById("universalModal");
-  const card = document.getElementById("feedbackCard");
+    const modal = document.getElementById('universalModal');
+    const card = document.getElementById('feedbackCard');
+    
+    // 1. Set the visual style and text
+    card.className = 'feedback-card error';
+    document.getElementById('feedbackIcon').innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+    document.getElementById('modalTitle').innerText = 'Confirm Deletion';
+    document.getElementById('modalMsg').innerText = `Are you sure you want to delete ${code}? This will also remove all sections associated with it.`;
 
-  // Set style to "warning/error"
-  card.className = "feedback-card error";
-  document.getElementById("feedbackIcon").innerHTML =
-    '<i class="fa-solid fa-triangle-exclamation"></i>';
-  document.getElementById("modalTitle").innerText = "Confirm Deletion";
-  document.getElementById(
-    "modalMsg"
-  ).innerText = `Are you sure you want to delete ${code}? This will also delete all sections under this subject.`;
-
-  // Replace the single button with two buttons: Cancel and Confirm
-  const footer = document.querySelector(".feedback-btn").parentElement;
-  footer.innerHTML = `
+    // 2. Clear and inject the dual-button layout
+    const footer = document.querySelector('.feedback-btn').parentElement;
+    footer.id = "modalFooter"; // Giving it an ID for easy resetting later
+    footer.innerHTML = `
         <div style="display: flex; gap: 10px; margin-top: 20px;">
-            <button class="feedback-btn" style="background: #64748b;" onclick="closeFeedback()">Cancel</button>
-            <button class="feedback-btn" style="background: #ef4444;" onclick="executeDelete(${id})">Yes, Delete</button>
+            <button class="feedback-btn" style="background: #64748b; margin-top:0;" onclick="closeFeedback()">Cancel</button>
+            <button class="feedback-btn" style="background: #ef4444; margin-top:0;" onclick="executeDelete(${id})">Yes, Delete</button>
         </div>
     `;
-
-  modal.style.display = "flex";
+    
+    modal.style.display = 'flex';
 }
 
 function executeDelete(id) {
