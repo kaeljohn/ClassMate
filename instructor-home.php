@@ -181,7 +181,7 @@ $result = $conn->query($sql);
                                     $allStudents = $conn->query("SELECT * FROM students ORDER BY last_name ASC");
                                     if ($allStudents->num_rows > 0): while ($st = $allStudents->fetch_assoc()): ?>
                                         <tr>
-                                            <td><input type="checkbox" class="student-checkbox" value="<?php echo $st['student_id']; ?>"></td>
+                                            <td><input type="checkbox" class="student-checkbox" value="<?php echo $st['id']; ?>"></td>
                                             <td><?php echo htmlspecialchars($st['student_number']); ?></td>
                                             <td><?php echo htmlspecialchars($st['last_name']); ?></td>
                                             <td><?php echo htmlspecialchars($st['first_name']); ?></td>
