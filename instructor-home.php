@@ -1,14 +1,14 @@
 <?php
 session_start();
 
-include 'php/db_connect.php'; 
+include 'php/db_connect.php';
 if (!isset($_SESSION['instructor_name'])) {
     header("Location: instructor-login.php");
     exit();
 }
 
 $inst = $_SESSION['instructor_name'];
-$current_instructor = $inst; 
+$current_instructor = $inst;
 
 $sql = "SELECT * FROM subjects WHERE instructor_id = '$inst'";
 $result = $conn->query($sql);
@@ -139,34 +139,25 @@ $result = $conn->query($sql);
                     </div>
                 </section>
 
-
-
-
                 <div id="addSubjectModal" class="modal">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h2><i class="fa-solid fa-book"></i> Add New Subject</h2>
-                            <button class="close-btn" onclick="closeAddSubjectModal()">
-                                <i class="fa-solid fa-times"></i>
-                            </button>
+                            <button class="close-btn" onclick="closeAddSubjectModal()">&times;</button>
                         </div>
-                        <form id="addSubjectForm" action="php/add_subject.php" method="POST">
+                        <form action="php/add_subject.php" method="POST">
                             <div class="form-group">
-                                <label for="subjectCode">Subject Code</label>
-                                <input type="text" id="subjectCode" name="subject_code" placeholder="e.g. DCIT 24"
-                                    required>
+                                <label>Subject Code</label>
+                                <input type="text" name="sub_code" placeholder="e.g., DCIT 24" required>
                             </div>
                             <div class="form-group">
-                                <label for="subjectName">Subject Name</label>
-                                <input type="text" id="subjectName" name="subject_name"
-                                    placeholder="e.g. Information Management" required>
+                                <label>Subject Name</label>
+                                <input type="text" name="sub_name" placeholder="e.g., Information Management" required>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary"
                                     onclick="closeAddSubjectModal()">Cancel</button>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fa-solid fa-check"></i> Add Subject
-                                </button>
+                                <button type="submit" class="btn btn-primary">Save Subject</button>
                             </div>
                         </form>
                     </div>
