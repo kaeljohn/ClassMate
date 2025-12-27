@@ -32,7 +32,6 @@ $result = $conn->query($sql);
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/dashboard.css">
 
-    <script src="js/instructor-dashboard.js"></script>
 
     <style>
         /* Table and UI Enhancements */
@@ -130,6 +129,8 @@ $result = $conn->query($sql);
             }
         }
     </style>
+
+    <script src="js/instructor-dashboard.js"></script>
 </head>
 
 <body>
