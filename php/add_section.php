@@ -2,7 +2,7 @@
 session_start();
 include 'db_connect.php';
 
-if ($_SERVER["REQUEST_METHOD"] == HTMLPOST) {
+if ($_SERVER["REQUEST_METHOD"] == $_POST) {
     $subject_id = $_POST['subject_id'];
     $section_name = $_POST['section_name'];
     $school_year = $_POST['school_year'];
