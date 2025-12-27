@@ -52,33 +52,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-function openAddSectionModal() {
-    document.getElementById('addSectionModal').style.display = 'block';
-}
+// ADD NEW STUDENT
 
-function closeAddSectionModal() {
-    document.getElementById('addSectionModal').style.display = 'none';
-}
-
-function viewStudentsInSection(sectionId) {
-    document.getElementById('viewStudentsModal').style.display = 'block';
-    document.getElementById('hidden_section_id').value = sectionId;
-    
-    // Fetch students in this section using AJAX
-    fetch('php/get_section_students.php?section_id=' + sectionId)
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById('sectionStudentsList').innerHTML = data;
-        });
-}
-
-function closeViewStudentsModal() {
-    document.getElementById('viewStudentsModal').style.display = 'none';
-}
-
-function filterStudents() {
-    let input = document.getElementById("studentSearch").value.toLowerCase();
-    let rows = document.querySelectorAll("#enrollmentTable tbody tr");
+// 1. Search Function for the Enrollment Table
+function filterEnrollmentTable() {
+    let input = document.getElementById("enrollmentSearchInput").value.toLowerCase();
+    let rows = document.querySelectorAll("#mainEnrollmentTable tbody tr:not(.no-data)");
 
     rows.forEach(row => {
         let text = row.innerText.toLowerCase();
@@ -86,15 +65,22 @@ function filterStudents() {
     });
 }
 
-function toggleAll(source) {
-    let checkboxes = document.querySelectorAll('input[name="student_ids[]"]');
-    for(let checkbox of checkboxes) {
-        checkbox.checked = source.checked;
-    }
+// 2. Select All Checkboxes Function
+function toggleSelectAll(source) {
+    let checkboxes = document.querySelectorAll('.student-checkbox');
+    checkboxes.forEach(cb => {
+        // Only toggle visible checkboxes (in case user has filtered the list)
+        if (cb.closest('tr').style.display !== 'none') {
+            cb.checked = source.checked;
+        }
+    });
 }
 
-// Function to open modal and set the section ID
-function openEnrollmentModal(sectionId) {
-    document.getElementById('active_section_id').value = sectionId;
-    document.getElementById('enrollmentModal').style.display = 'block';
+// 3. Modal Controls
+function openAddStudentModal() {
+    document.getElementById('addStudentModal').style.display = 'block';
+}
+
+function closeAddStudentModal() {
+    document.getElementById('addStudentModal').style.display = 'none';
 }
