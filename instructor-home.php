@@ -79,9 +79,7 @@ $result = $conn->query($sql);
                             Analytics</a></li>
 
                 </ul>
-                <div class="sidebar-item" onclick="openEnrollmentModal()">
-                    <i class="fa-solid fa-plus-circle"></i> Enroll a Student
-                </div>
+                <button onclick="openEnrollment(<?php echo $row['section_id']; ?>)">Enroll Students</button>
             </nav>
 
             <main class="content-area">
