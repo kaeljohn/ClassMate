@@ -4,14 +4,10 @@ include 'db_connect.php';
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $last_name = trim($_POST['last_name']);
     $first_name = trim($_POST['first_name']);
-    $mi = trim($_POST['middle_name']);
 
-    // 1. DUPLICATE CHECK
-    // We check if a student with the exact same First and Last name already exists
-    $check_stmt = $conn->prepare("SELECT id FROM students WHERE last_name = ? AND first_name = ?");
-    $check_stmt->bind_param("ss", $last_name, $first_name);
-    $check_stmt->execute();
-    $check_result = $check_stmt->get_result();
+    $check = $conn->prepare("SELECT id FROM students WHERE last_name = ? AND first_name = ?");
+    $check->bind_param("ss", $last_name, $first_name);
+    $check->execute();
 
     if ($check->get_result()->num_rows > 0) {
         echo json_encode(['status' => 'exists']);
