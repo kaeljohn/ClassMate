@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", function() {
     setupFormListeners();
 });
 
-// Function to show the feedback modal
+// 1. Universal Feedback Trigger
 function showFeedback(type, title, message) {
     const modal = document.getElementById('universalModal');
     const card = document.getElementById('feedbackCard');
@@ -47,17 +47,14 @@ function showFeedback(type, title, message) {
     const titleEl = document.getElementById('modalTitle');
     const msgEl = document.getElementById('modalMsg');
 
-    // Reset classes
     card.className = 'feedback-card ' + type;
-    
-    // Set Content
     titleEl.innerText = title;
     msgEl.innerText = message;
+    
     icon.innerHTML = (type === 'error') 
-        ? '<i class="fa-solid fa-triangle-exclamation"></i>' 
-        : '<i class="fa-solid fa-circle-check"></i>';
+        ? '<i class="fa-solid fa-triangle-exclamation" style="color: #ef4444;"></i>' 
+        : '<i class="fa-solid fa-circle-check" style="color: #10b981;"></i>';
 
-    // Show Modal
     modal.style.display = 'flex';
 }
 
@@ -65,27 +62,33 @@ function closeFeedback() {
     document.getElementById('universalModal').style.display = 'none';
 }
 
-// Intercept the Registration Form
-document.querySelector('#addStudentModal form').addEventListener('submit', function(e) {
-    e.preventDefault(); // Stop page reload
+// 2. Handle the Registration via AJAX
+const registrationForm = document.querySelector('#addStudentModal form');
+if(registrationForm) {
+    registrationForm.addEventListener('submit', function(e) {
+        e.preventDefault();
 
-    const formData = new FormData(this);
+        const formData = new FormData(this);
 
-    fetch('php/add_new_student.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json()) // We expect JSON back from PHP
-    .then(data => {
-        if (data.status === 'exists') {
-            showFeedback('error', 'Already Exists', 'This student is already in the database.');
-        } else if (data.status === 'success') {
-            showFeedback('success', 'Registered!', 'Student has been added successfully.');
-            closeAddStudentModal(); // Close the input form
-            // Optionally: reload the table or add the row via JS
-        }
-    })
-    .catch(error => {
-        showFeedback('error', 'System Error', 'Something went wrong on the server.');
+        fetch('php/add_new_student.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'exists') {
+                showFeedback('error', 'Action Denied', 'This student is already in the system.');
+            } else if (data.status === 'success') {
+                showFeedback('success', 'Success!', 'Student registered successfully.');
+                closeAddStudentModal(); // Closes the entry modal
+                registrationForm.reset(); // Clears the inputs
+                // Option: location.reload(); if you want the table to update immediately
+            } else {
+                showFeedback('error', 'Error', 'Something went wrong.');
+            }
+        })
+        .catch(err => {
+            showFeedback('error', 'System Error', 'Could not connect to the server.');
+        });
     });
-});
+}

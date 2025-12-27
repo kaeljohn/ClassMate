@@ -32,6 +32,8 @@ $result = $conn->query($sql);
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/dashboard.css">
 
+    <script src="js/dashboard.js"></script>
+
     <style>
         .table-container {
             overflow-x: auto;
@@ -78,22 +80,6 @@ $result = $conn->query($sql);
             <a href="logout.php" class="account-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
         </div>
     </header>
-
-    <div id="universalModal" class="modal-overlay" style="display: none;">
-        <div id="feedbackCard" class="feedback-card">
-            <div class="feedback-header">
-                <div id="feedbackIcon" class="feedback-icon"></div>
-                <button class="modal-close-icon" onclick="closeFeedback()">&times;</button>
-            </div>
-            <div class="feedback-content">
-                <h2 id="modalTitle"></h2>
-                <p id="modalMsg"></p>
-            </div>
-            <div class="feedback-footer">
-                <button id="modalBtn" class="feedback-btn" onclick="closeFeedback()">Acknowledge</button>
-            </div>
-        </div>
-    </div>
 
     <div class="custom-shape-divider-top-1766060304">
         <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
@@ -386,6 +372,22 @@ $result = $conn->query($sql);
         function openAddStudentModal() { document.getElementById('addStudentModal').style.display = 'block'; }
         function closeAddStudentModal() { document.getElementById('addStudentModal').style.display = 'none'; }
     </script>
+
+    <div id="universalModal" class="modal-overlay" style="display: none;">
+        <div id="feedbackCard" class="feedback-card">
+            <div class="feedback-header">
+                <div id="feedbackIcon" class="feedback-icon"></div>
+                <button class="modal-close-icon" onclick="closeFeedback()">&times;</button>
+            </div>
+            <div class="feedback-content">
+                <h2 id="modalTitle"></h2>
+                <p id="modalMsg"></p>
+            </div>
+            <div class="feedback-footer">
+                <button class="feedback-btn" onclick="closeFeedback()">Acknowledge</button>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
