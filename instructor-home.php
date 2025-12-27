@@ -174,37 +174,53 @@ $result = $conn->query($sql);
                 <section id="students" class="content-section" style="display: none;">
                     <div class="dashboard-display">
                         <div class="table-controls">
-                            <button class="btn btn-primary" onclick="openAddSectionModal()">
-                                <i class="fa-solid fa-plus"></i> Add Section
-                            </button>
+                            <h2 id="student-list-title">All Enrolled Students</h2>
                         </div>
-
                         <div class="table-container">
                             <table class="subjects-table">
                                 <thead>
                                     <tr>
-                                        <th>TEST</th>
-                                        <th>TEST</th>
-                                        <th>TEST</th>
-                                        <th>TEST</th>
+                                        <th>Section Name</th>
+                                        <th>Subject</th>
+                                        <th>School Year</th>
+                                        <th>Semester</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody id="subjectsTableBody">
-                                    <tr class="no-data">
-                                        <td colspan="6" style="text-align: center; padding: 2rem; color: #999;">
-                                            <i class="fa-solid fa-book"
-                                                style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
-                                            No Student found. Click "Add Student" to get started.
-                                        </td>
-                                    </tr>
+                                <tbody id="sectionsTableBody">
+                                    <?php
+                                    $sec_sql = "SELECT s.*, sub.subject_code 
+                                    FROM sections s 
+                                    JOIN subjects sub ON s.subject_id = sub.subject_id 
+                                    WHERE sub.instructor_id = '$current_instructor'";
+                                    $sec_result = $conn->query($sec_sql);
+
+                                    if ($sec_result->num_rows > 0):
+                                        while ($sec = $sec_result->fetch_assoc()): ?>
+                                            <tr>
+                                                <td><?php echo htmlspecialchars($sec['section_name']); ?></td>
+                                                <td><?php echo htmlspecialchars($sec['subject_code']); ?></td>
+                                                <td><?php echo htmlspecialchars($sec['school_year']); ?></td>
+                                                <td><?php echo htmlspecialchars($sec['semester']); ?></td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-info"
+                                                        onclick="viewStudentsInSection(<?php echo $sec['section_id']; ?>)">
+                                                        View Students
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        <?php endwhile;
+                                    else: ?>
+                                        <tr>
+                                            <td colspan="5" style="text-align:center;">No sections created yet.</td>
+                                        </tr>
+                                    <?php endif; ?>
                                 </tbody>
                             </table>
                         </div>
                     </div>
-
-
-
                 </section>
+
                 <section id="attendance" class="content-section" style="display: none;">
                     <div class="dashboard-display">
                         <div class="table-controls"></div>
@@ -291,23 +307,31 @@ $result = $conn->query($sql);
                 <div id="addSectionModal" class="modal">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h2><i class="fa-solid fa-users"></i> Add New Section</h2>
-                            <button class="close-btn" onclick="closeAddSectionModal()">
-                                <i class="fa-solid fa-times"></i>
-                            </button>
+                            <h2><i class="fa-solid fa-users"></i> Create New Section</h2>
+                            <button class="close-btn" onclick="closeAddSectionModal()">&times;</button>
                         </div>
-                        <form id="addSectionForm" action="php/add_section.php" method="POST">
+                        <form action="php/add_section.php" method="POST">
                             <div class="form-group">
-                                <label>Course Code</label>
-                                <input type="text" name="course_code" placeholder="e.g. DCIT 24" required>
+                                <label>Select Subject</label>
+                                <select name="subject_id" required>
+                                    <option value="">-- Choose a Subject --</option>
+                                    <?php
+                                    // Re-run query to populate dropdown
+                                    $subjects_dropdown = $conn->query("SELECT * FROM subjects WHERE instructor_id = '$current_instructor'");
+                                    while ($sub = $subjects_dropdown->fetch_assoc()): ?>
+                                        <option value="<?php echo $sub['subject_id']; ?>">
+                                            <?php echo htmlspecialchars($sub['subject_code'] . " - " . $sub['subject_name']); ?>
+                                        </option>
+                                    <?php endwhile; ?>
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label>Section Name</label>
-                                <input type="text" name="section_name" placeholder="e.g. BSIT 2-1" required>
+                                <input type="text" name="section_name" placeholder="e.g., BSIT 2-1" required>
                             </div>
                             <div class="form-group">
-                                <label for="schoolYear">School Year</label>
-                                <input type="text" id="schoolYear" placeholder="e.g., 2024-2025" required>
+                                <label>School Year</label>
+                                <input type="text" name="school_year" placeholder="2024-2025" required>
                             </div>
                             <div class="form-group">
                                 <label>Semester</label>
@@ -319,11 +343,13 @@ $result = $conn->query($sql);
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary"
                                     onclick="closeAddSectionModal()">Cancel</button>
-                                <button type="submit" class="btn btn-primary">Add Section</button>
+                                <button type="submit" class="btn btn-primary">Create Section</button>
                             </div>
                         </form>
                     </div>
                 </div>
+
+
                 <section id="attendance" class="content-section" style="display: none;">
                 </section>
 

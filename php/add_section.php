@@ -2,28 +2,19 @@
 session_start();
 include 'db_connect.php';
 
-// Check if user is logged in
-if (!isset($_SESSION['instructor_name'])) {
-    header("Location: ../instructor-login.php");
-    exit();
-}
+if ($_SERVER["REQUEST_METHOD"] == HTMLPOST) {
+    $subject_id = $_POST['subject_id'];
+    $section_name = $_POST['section_name'];
+    $school_year = $_POST['school_year'];
+    $semester = $_POST['semester'];
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $code = $_POST['course_code'];
-    $name = $_POST['section_name'];
-    $sy   = $_POST['school_year']; // New variable
-    $sem  = $_POST['semester'];
-    $inst = $_SESSION['instructor_name'];
+    $sql = "INSERT INTO sections (section_name, subject_id, school_year, semester) 
+            VALUES ('$section_name', '$subject_id', '$school_year', '$semester')";
 
-    // Prepared statement for security (bonus marks!)
-    $stmt = $conn->prepare("INSERT INTO sections (course_code, section_name, semester, instructor_id) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("ssss", $code, $name, $sem, $inst);
-
-    if ($stmt->execute()) {
-        header("Location: ../instructor-home.php?status=success");
+    if ($conn->query($sql) === TRUE) {
+        header("Location: ../instructor-home.php?status=section_added");
     } else {
-        echo "Error: " . $stmt->error;
+        echo "Error: " . $sql . "<br>" . $conn->error;
     }
-    $stmt->close();
 }
 ?>
