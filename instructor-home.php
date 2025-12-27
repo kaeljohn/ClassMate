@@ -282,28 +282,6 @@ $result = $conn->query($sql);
                             <button class="btn btn-primary" onclick="openAddStudentModal()">
                                 <i class="fa-solid fa-user-plus"></i> Add New Student
                             </button>
-                            <div class="assign-controls"
-                                style="display: inline-block; margin-left: 20px; padding: 10px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;">
-                                <label style="font-size: 0.85rem; font-weight: 600;">Assign Selected to:</label>
-                                <select id="targetSection"
-                                    style="padding: 5px; border-radius: 5px; border: 1px solid #cbd5e1;">
-                                    <option value="">-- Select Section --</option>
-                                    <?php
-                                    // Re-fetch sections for the dropdown
-                                    $sec_dropdown = $conn->query("SELECT s.section_id, s.section_name, sub.subject_code 
-                                    FROM sections s 
-                                    JOIN subjects sub ON s.subject_id = sub.subject_id 
-                                    WHERE sub.instructor_id = '$current_instructor'");
-                                    while ($s = $sec_dropdown->fetch_assoc()) {
-                                        echo "<option value='{$s['section_id']}'>{$s['section_name']} ({$s['subject_code']})</option>";
-                                    }
-                                    ?>
-                                </select>
-                                <button class="btn btn-primary" style="background: #10b981; border: none;"
-                                    onclick="assignStudents()">
-                                    <i class="fa-solid fa-link"></i> Bulk Assign
-                                </button>
-                            </div>
                             <div class="search-box">
                                 <i class="fa-solid fa-search"></i>
                                 <input type="text" id="enrollmentSearch" onkeyup="filterEnrollmentTable()"
@@ -508,44 +486,42 @@ $result = $conn->query($sql);
             });
         }
 
-        function assignStudents() {
-            const sectionId = document.getElementById('targetSection').value;
-            const selectedCheckboxes = document.querySelectorAll('.student-checkbox:checked');
+        // AJAX for Adding Subject
+        const subjectForm = document.querySelector('#addSubjectModal form');
+        if (subjectForm) {
+            subjectForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                fetch('php/add_subject.php', { method: 'POST', body: new FormData(this) })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            closeAddSubjectModal();
+                            showFeedback('success', 'Subject Added', data.message);
+                            setTimeout(() => location.reload(), 1500);
+                        } else {
+                            showFeedback('error', 'Failed', data.message);
+                        }
+                    });
+            });
+        }
 
-            if (!sectionId) {
-                showFeedback('error', 'Missing Section', 'Please select a section first.');
-                return;
-            }
-
-            if (selectedCheckboxes.length === 0) {
-                showFeedback('error', 'No Selection', 'Please check at least one student.');
-                return;
-            }
-
-            // Gather IDs into an array
-            const studentIds = Array.from(selectedCheckboxes).map(cb => cb.value);
-
-            // Send to server
-            fetch('php/assign_students.php', {
-                method: 'POST',
-                headers: { 'Content-Type: application/json' },
-                body: JSON.stringify({
-                    section_id: sectionId,
-                    student_ids: studentIds
-                })
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        showFeedback('success', 'Assigned!', `${data.count} students enrolled successfully.`);
-                        // Uncheck all
-                        document.querySelectorAll('.student-checkbox').forEach(cb => cb.checked = false);
-                        document.getElementById('selectAllStudents').checked = false;
-                    } else {
-                        showFeedback('error', 'Assignment Failed', data.message);
-                    }
-                })
-                .catch(err => showFeedback('error', 'Server Error', 'Could not complete bulk assignment.'));
+        // AJAX for Adding Section
+        const sectionForm = document.querySelector('#addSectionModal form');
+        if (sectionForm) {
+            sectionForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                fetch('php/add_section.php', { method: 'POST', body: new FormData(this) })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            closeAddSectionModal();
+                            showFeedback('success', 'Section Created', data.message);
+                            setTimeout(() => location.reload(), 1500);
+                        } else {
+                            showFeedback('error', 'Failed', data.message);
+                        }
+                    });
+            });
         }
 
         // Modal Controls

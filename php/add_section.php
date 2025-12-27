@@ -1,20 +1,20 @@
 <?php
-session_start();
+header('Content-Type: application/json');
 include 'db_connect.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $subject_id = $_POST['subject_id'];
-    $section_name = $_POST['section_name'];
-    $school_year = $_POST['school_year'];
-    $semester = $_POST['semester'];
+    $sub_id = $_POST['subject_id'];
+    $sec_name = trim($_POST['section_name']);
+    $sy = trim($_POST['school_year']);
+    $sem = $_POST['semester'];
 
-    $sql = "INSERT INTO sections (section_name, subject_id, school_year, semester) 
-            VALUES ('$section_name', '$subject_id', '$school_year', '$semester')";
+    $stmt = $conn->prepare("INSERT INTO sections (subject_id, section_name, school_year, semester) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("isss", $sub_id, $sec_name, $sy, $sem);
 
-    if ($conn->query($sql) === TRUE) {
-        header("Location: ../instructor-home.php?status=section_added");
+    if ($stmt->execute()) {
+        echo json_encode(['status' => 'success', 'message' => 'Section created successfully!']);
     } else {
-        echo "Error: " . $sql . "<br>" . $conn->error;
+        echo json_encode(['status' => 'error', 'message' => $conn->error]);
     }
 }
 ?>
