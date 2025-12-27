@@ -295,31 +295,33 @@ $result = $conn->query($sql);
                 <div id="addStudentModal" class="modal">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h2><i class="fa-solid fa-user-plus"></i> Register New Student</h2>
+                            <h2><i class="fa-solid fa-user-plus"></i> Quick Register</h2>
                             <button class="close-btn" onclick="closeAddStudentModal()">&times;</button>
                         </div>
                         <form action="php/add_new_student.php" method="POST">
                             <div class="name-row">
                                 <div class="form-group">
                                     <label>Last Name</label>
-                                    <input type="text" name="last_name" required>
+                                    <input type="text" name="last_name" placeholder="Dela Cruz" required>
                                 </div>
                                 <div class="form-group">
                                     <label>First Name</label>
-                                    <input type="text" name="first_name" required>
+                                    <input type="text" name="first_name" placeholder="Juan" required>
                                 </div>
                                 <div class="form-group" style="flex: 0.3;">
-                                    <label>M.I.</label>
-                                    <input type="text" name="middle_name" maxlength="1" placeholder="A" required>
+                                    <label>M.I. (Optional)</label>
+                                    <input type="text" name="middle_name" maxlength="1" placeholder="A">
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label>Student Number</label>
-                                <input type="text" name="student_number" required>
+
+                            <div class="info-banner"
+                                style="background: #f0f7ff; padding: 10px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #007bff;">
+                                <p style="font-size: 0.85rem; color: #555; margin: 0;">
+                                    <i class="fa-solid fa-circle-info"></i>
+                                    Student ID and Email will be generated automatically.
+                                </p>
                             </div>
-                            <p style="font-size: 0.8rem; color: #666; margin-bottom: 15px;">
-                                * Email address will be generated automatically.
-                            </p>
+
                             <div class="modal-footer">
                                 <button type="submit" class="btn btn-primary">Register Student</button>
                             </div>

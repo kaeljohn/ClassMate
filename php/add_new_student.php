@@ -6,28 +6,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $first_name = trim($_POST['first_name']);
     $mi = trim($_POST['middle_name']);
     
-    // 1. Automatically add the dot to the initial
-    $middle_name_with_dot = !empty($mi) ? strtoupper($mi) . "." : "";
+    // 1. Handle Middle Initial (NULL if empty, add dot if present)
+    $middle_name_final = !empty($mi) ? strtoupper($mi) . "." : NULL;
     
-    // 2. Generate Automatic Unique Email
-    // Format: firstname.lastname@cvsu.edu.ph
+    // 2. Generate Automatic Incrementing Student Number
+    // Fetches the latest ID to create the next number
+    $res = $conn->query("SELECT MAX(id) as max_id FROM students");
+    $row = $res->fetch_assoc();
+    $next_id = $row['max_id'] + 1;
+    $student_number = "2024-" . str_pad($next_id, 5, '0', STR_PAD_LEFT);
+    
+    // 3. Generate Automatic Unique Email
     $base_email = strtolower(str_replace(' ', '', $first_name) . "." . str_replace(' ', '', $last_name));
     $email_domain = "@cvsu.edu.ph";
     $final_email = $base_email . $email_domain;
 
-    // Check for existing email to ensure uniqueness
-    $check_email = $conn->query("SELECT email FROM students WHERE email LIKE '$base_email%'");
-    $count = $check_email->num_rows;
-    if ($count > 0) {
-        $final_email = $base_email . $count . $email_domain;
+    $check_email = $conn->query("SELECT email FROM students WHERE email = '$final_email'");
+    if ($check_email->num_rows > 0) {
+        $final_email = $base_email . $next_id . $email_domain;
     }
 
-    $student_number = $_POST['student_number'];
+    // 4. Prepared Statement for NULL handling
+    $stmt = $conn->prepare("INSERT INTO students (last_name, first_name, middle_name, student_number, email) VALUES (?, ?, ?, ?, ?)");
+    $stmt->bind_param("sssss", $last_name, $first_name, $middle_name_final, $student_number, $final_email);
 
-    $sql = "INSERT INTO students (last_name, first_name, middle_name, student_number, email) 
-            VALUES ('$last_name', '$first_name', '$middle_name_with_dot', '$student_number', '$final_email')";
-
-    if ($conn->query($sql) === TRUE) {
+    if ($stmt->execute()) {
         header("Location: ../instructor-home.php?status=success");
     } else {
         echo "Error: " . $conn->error;
