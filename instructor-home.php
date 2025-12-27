@@ -80,7 +80,8 @@ $result = $conn->query($sql);
                 </ul>
 
                 <div class="nav-btn" onclick="openEnrollmentModal()">
-                    <i class="fa-solid fa-plus-circle"></i> Enroll a Student
+                    <a href="#" class="nav-btn" data-target="enrollment"><i class="fa-solid fa-plus-circle"></i>
+                        Enroll a Student</a></li>
                 </div>
             </nav>
 
