@@ -308,19 +308,18 @@ $result = $conn->query($sql);
                                     <label>First Name</label>
                                     <input type="text" name="first_name" required>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group" style="flex: 0.3;">
                                     <label>M.I.</label>
-                                    <input type="text" name="middle_name" maxlength="1" placeholder="A">
+                                    <input type="text" name="middle_name" maxlength="1" placeholder="A" required>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label>Student Number</label>
-                                <input type="text" name="student_number" placeholder="2024-00000" required>
+                                <input type="text" name="student_number" required>
                             </div>
-                            <div class="form-group">
-                                <label>Email Address</label>
-                                <input type="email" name="email" placeholder="student@cvsu.edu.ph" required>
-                            </div>
+                            <p style="font-size: 0.8rem; color: #666; margin-bottom: 15px;">
+                                * Email address will be generated automatically.
+                            </p>
                             <div class="modal-footer">
                                 <button type="submit" class="btn btn-primary">Register Student</button>
                             </div>

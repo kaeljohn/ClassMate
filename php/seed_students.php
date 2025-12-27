@@ -1,42 +1,36 @@
 <?php
-include 'db_connect.php';
+include 'php/db_connect.php';
 
-// 1. Clear existing data
 $conn->query("TRUNCATE TABLE students");
 
-$last_names = ['Bautista', 'Pascual', 'Santos', 'Dela Cruz', 'Garcia', 'Reyes', 'Aquino', 'Mendoza', 'Torres', 'Lim', 'Gomez', 'Villanueva'];
-$first_names = ['Juan', 'Maria', 'John', 'Sophia', 'Luke', 'Mark', 'Elena', 'Chris', 'Jane', 'Antonio', 'Isabella', 'Mateo', 'Gabriel', 'Rosa'];
+$last_names = ['Bautista', 'Pascual', 'Santos', 'Dela Cruz', 'Garcia', 'Reyes', 'Aquino', 'Mendoza', 'Torres', 'Lim'];
+$first_names = ['Juan', 'Maria', 'John', 'Sophia', 'Luke', 'Mark', 'Elena', 'Chris', 'Jane', 'Antonio'];
 
 $generated_count = 0;
-$used_full_names = [];
-
-echo "<h2>Generating 60 Unique Students with Initials...</h2>";
+$used_emails = [];
 
 while ($generated_count < 60) {
     $ln = $last_names[array_rand($last_names)];
     $fn = $first_names[array_rand($first_names)];
+    $mi = chr(rand(65, 90)) . "."; // Letter + Dot
     
-    // Generate a random letter A-Z for the initial
-    $initial = chr(rand(65, 90)) . ".";
+    // Auto-generate Unique Email
+    $base_email = strtolower($fn . "." . $ln);
+    $temp_email = $base_email . "@cvsu.edu.ph";
     
-    // Unique check based on Last, First, and Initial
-    $fullNameKey = "$ln $fn $initial";
-
-    if (!in_array($fullNameKey, $used_full_names)) {
-        $used_full_names[] = $fullNameKey;
-        
-        $student_num = "2024-" . str_pad($generated_count + 1, 5, '0', STR_PAD_LEFT);
-        $email = strtolower($fn . "." . $ln . $generated_count . "@cvsu.edu.ph");
-
-        // Insert into the new 'id' and 'middle_name' columns
-        $sql = "INSERT INTO students (last_name, first_name, middle_name, student_number, email) 
-                VALUES ('$ln', '$fn', '$initial', '$student_num', '$email')";
-        
-        if ($conn->query($sql)) {
-            $generated_count++;
-        }
+    $suffix = 1;
+    while (in_array($temp_email, $used_emails)) {
+        $temp_email = $base_email . $suffix . "@cvsu.edu.ph";
+        $suffix++;
     }
-}
+    
+    $used_emails[] = $temp_email;
+    $student_num = "2024-" . str_pad($generated_count + 1, 5, '0', STR_PAD_LEFT);
 
-echo "Successfully generated $generated_count unique students!";
+    $sql = "INSERT INTO students (last_name, first_name, middle_name, student_number, email) 
+            VALUES ('$ln', '$fn', '$mi', '$student_num', '$temp_email')";
+    
+    if ($conn->query($sql)) { $generated_count++; }
+}
+echo "Successfully generated 60 students with auto-emails and dotted initials!";
 ?>
