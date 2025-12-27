@@ -174,8 +174,15 @@ $result = $conn->query($sql);
                 <section id="students" class="content-section" style="display: none;">
                     <div class="dashboard-display">
                         <div class="table-controls">
-                            <h2 id="student-list-title">All Enrolled Students</h2>
+                            <button class="btn btn-primary" onclick="openAddSubjectModal()">
+                                <i class="fa-solid fa-plus"></i> Add Subject
+                            </button>
+                            <div class="search-box">
+                                <i class="fa-solid fa-search"></i>
+                                <input type="text" id="searchSubjects" placeholder="Search subjects...">
+                            </div>
                         </div>
+                        
                         <div class="table-container">
                             <table class="subjects-table">
                                 <thead>

@@ -52,32 +52,26 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// 2. Specific function for the "View Students" button
-function viewStudentsBySubject(subjectId) {
-    // Switch tab UI to "Students"
-    const studentBtn = document.querySelector('[data-target="students"]');
-    studentBtn.click(); 
+function openAddSectionModal() {
+    document.getElementById('addSectionModal').style.display = 'block';
+}
 
-    // Fetch students using AJAX
-    fetch(`php/get_students.php?subject_id=${subjectId}`)
-        .then(response => response.json())
+function closeAddSectionModal() {
+    document.getElementById('addSectionModal').style.display = 'none';
+}
+
+function viewStudentsInSection(sectionId) {
+    document.getElementById('viewStudentsModal').style.display = 'block';
+    document.getElementById('hidden_section_id').value = sectionId;
+    
+    // Fetch students in this section using AJAX
+    fetch('php/get_section_students.php?section_id=' + sectionId)
+        .then(response => response.text())
         .then(data => {
-            const tbody = document.getElementById('studentsTableBody');
-            tbody.innerHTML = ''; // Clear current table
-
-            if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No students enrolled in this subject.</td></tr>';
-            } else {
-                data.forEach(student => {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${student.student_number}</td>
-                            <td>${student.full_name}</td>
-                            <td>${student.email}</td>
-                            <td><button class="btn btn-sm btn-danger">Unenroll</button></td>
-                        </tr>
-                    `;
-                });
-            }
+            document.getElementById('sectionStudentsList').innerHTML = data;
         });
+}
+
+function closeViewStudentsModal() {
+    document.getElementById('viewStudentsModal').style.display = 'none';
 }
