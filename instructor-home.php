@@ -185,7 +185,7 @@ $result = $conn->query($sql);
                                             <td><?php echo htmlspecialchars($st['student_number']); ?></td>
                                             <td><?php echo htmlspecialchars($st['last_name']); ?></td>
                                             <td><?php echo htmlspecialchars($st['first_name']); ?></td>
-                                            <td><?php echo htmlspecialchars($st['middle_initial']); ?></td>
+                                            <td><?php echo htmlspecialchars($st['middle_name']); ?></td>
                                             <td><?php echo htmlspecialchars($st['email']); ?></td>
                                         </tr>
                                     <?php endwhile; else: ?>
