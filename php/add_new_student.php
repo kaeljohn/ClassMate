@@ -7,7 +7,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $mi = trim($_POST['middle_name']);
     
     // 1. Handle Middle Initial (NULL if empty, add dot if present)
-    $middle_name_final = !empty($mi) ? strtoupper($mi) . "." : NULL;
+    $middle_name_final = !empty($mi) ? strtoupper($mi) . "." : " ";
     
     // 2. Generate Automatic Incrementing Student Number
     // Fetches the latest ID to create the next number
