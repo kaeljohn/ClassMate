@@ -93,6 +93,22 @@ $result = $conn->query($sql);
         </svg>
     </div>
 
+    <?php if (isset($_GET['error']) && $_GET['error'] == 'exists'): ?>
+        <div
+            style="background: #ffebee; color: #c62828; padding: 15px; margin: 20px; border-radius: 8px; border-left: 5px solid #ef5350;">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <strong>Registration Failed:</strong> A student with that name is already registered in the system.
+        </div>
+    <?php endif; ?>
+
+    <?php if (isset($_GET['status']) && $_GET['status'] == 'success'): ?>
+        <div
+            style="background: #e8f5e9; color: #2e7d32; padding: 15px; margin: 20px; border-radius: 8px; border-left: 5px solid #66bb6a;">
+            <i class="fa-solid fa-circle-check"></i>
+            <strong>Success:</strong> Student registered and ID generated!
+        </div>
+    <?php endif; ?>
+
     <section class="main-dashboard">
         <div class="dashboard-box">
             <nav class="sidebar">
