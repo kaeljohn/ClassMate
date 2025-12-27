@@ -1,7 +1,8 @@
 <?php
 session_start();
-
 include 'php/db_connect.php';
+
+// Authentication Check
 if (!isset($_SESSION['instructor_name'])) {
     header("Location: instructor-login.php");
     exit();
@@ -10,6 +11,7 @@ if (!isset($_SESSION['instructor_name'])) {
 $inst = $_SESSION['instructor_name'];
 $current_instructor = $inst;
 
+// Fetch Subjects for the current instructor
 $sql = "SELECT * FROM subjects WHERE instructor_id = '$inst'";
 $result = $conn->query($sql);
 ?>
@@ -20,69 +22,56 @@ $result = $conn->query($sql);
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ClassMate</title>
+    <title>ClassMate - Instructor Dashboard</title>
 
     <link rel="icon" type="image/svg+xml" href="SVG/favicon.svg">
-
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/dashboard.css">
 
-    <script src="js/modals.js"></script>
+    <style>
+        /* Quick styles for the new enrollment table UI */
+        .table-container { overflow-x: auto; margin-top: 20px; }
+        .student-checkbox { cursor: pointer; transform: scale(1.2); }
+        .search-box input { padding: 8px 35px 8px 15px; border-radius: 20px; border: 1px solid #ddd; }
+    </style>
 </head>
 
 <body>
     <header>
         <h1>
             <a href="index.html" class="logo-link">
-                <i class="fa-solid fa-graduation-cap"></i>
-                ClassMate
+                <i class="fa-solid fa-graduation-cap"></i> ClassMate
             </a>
         </h1>
-
         <div class="header-user-info">
-            <span class="welcome-text">Welcome,
-                <strong><?php echo htmlspecialchars($current_instructor); ?>!</strong></span>
+            <span class="welcome-text">Welcome, <strong><?php echo htmlspecialchars($current_instructor); ?>!</strong></span>
             <a href="logout.php" class="account-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
         </div>
     </header>
-    <!-- wave part sa header  -->
+
     <div class="custom-shape-divider-top-1766060304">
         <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
-            <path
-                d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z"
-                opacity=".25" class="shape-fill"></path>
-            <path
-                d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z"
-                opacity=".5" class="shape-fill"></path>
-            <path
-                d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z"
-                class="shape-fill"></path>
+            <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" class="shape-fill"></path>
+            <path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5" class="shape-fill"></path>
+            <path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" class="shape-fill"></path>
         </svg>
     </div>
+
     <section class="main-dashboard">
         <div class="dashboard-box">
             <nav class="sidebar">
                 <ul class="nav-links">
-                    <li><a href="#" class="nav-btn active" data-target="courses"><i class="fa-solid fa-book-open"></i>
-                            Courses</a></li>
-                    <li><a href="#" class="nav-btn" data-target="students"><i class="fa-solid fa-user-graduate"></i>
-                            Students</a></li>
-                    <li><a href="#" class="nav-btn" data-target="attendance"><i class="fa-solid fa-calendar-check"></i>
-                            Attendance</a></li>
-                    <li><a href="#" class="nav-btn" data-target="evaluation"><i class="fa-solid fa-file-invoice"></i>
-                            Evaluation</a></li>
-                    <li><a href="#" class="nav-btn" data-target="analytics"><i class="fa-solid fa-chart-line"></i>
-                            Analytics</a></li>
+                    <li><a href="#" class="nav-btn active" data-target="courses"><i class="fa-solid fa-book-open"></i> Courses</a></li>
+                    <li><a href="#" class="nav-btn" data-target="students"><i class="fa-solid fa-user-graduate"></i> Sections</a></li>
+                    <li><a href="#" class="nav-btn" data-target="attendance"><i class="fa-solid fa-calendar-check"></i> Attendance</a></li>
+                    <li><a href="#" class="nav-btn" data-target="evaluation"><i class="fa-solid fa-file-invoice"></i> Evaluation</a></li>
+                    <li><a href="#" class="nav-btn" data-target="analytics"><i class="fa-solid fa-chart-line"></i> Analytics</a></li>
                 </ul>
-                
                 <div class="sidebar-bottom">
-                    <a href="#" class="nav-btn" data-target="enrollment"><i
-                            class="fa-solid fa-circle-plus"></i> Enroll
-                        a Student</a>
+                    <a href="#" class="nav-btn" data-target="enrollment"><i class="fa-solid fa-circle-plus"></i> Enroll a Student</a>
                 </div>
             </nav>
 
@@ -90,56 +79,32 @@ $result = $conn->query($sql);
                 <section id="courses" class="content-section">
                     <div class="dashboard-display">
                         <div class="table-controls">
-                            <button class="btn btn-primary" onclick="openAddSubjectModal()">
-                                <i class="fa-solid fa-plus"></i> Add Subject
-                            </button>
+                            <button class="btn btn-primary" onclick="openAddSubjectModal()"><i class="fa-solid fa-plus"></i> Add Subject</button>
                             <div class="search-box">
                                 <i class="fa-solid fa-search"></i>
                                 <input type="text" id="searchSubjects" placeholder="Search subjects...">
                             </div>
                         </div>
-
                         <div class="table-container">
                             <table class="subjects-table">
                                 <thead>
                                     <tr>
                                         <th>Subject Code</th>
                                         <th>Subject Name</th>
-                                        <th>Enrolled Students</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody id="subjectsTableBody">
-                                    <?php if ($result && $result->num_rows > 0): ?>
-                                        <?php while ($row = $result->fetch_assoc()): ?>
-                                            <tr>
-                                                <td><?php echo htmlspecialchars($row['subject_code']); ?></td>
-
-                                                <td><?php echo htmlspecialchars($row['subject_name']); ?></td>
-
-                                                <td>0</td>
-
-                                                <td>
-                                                    <button class="btn btn-sm btn-info"
-                                                        onclick="viewStudentsBySubject(<?php echo $row['subject_id']; ?>)">
-                                                        View Students
-                                                    </button>
-                                                    <a href="php/delete_subject.php?id=<?php echo $row['subject_id']; ?>"
-                                                        class="btn btn-sm btn-danger"
-                                                        onclick="return confirm('Are you sure you want to delete this subject?')">
-                                                        Delete
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        <?php endwhile; ?>
-                                    <?php else: ?>
-                                        <tr class="no-data">
-                                            <td colspan="4" style="text-align: center; padding: 2rem; color: #999;">
-                                                <i class="fa-solid fa-book"
-                                                    style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
-                                                No subjects found. Click "Add Subject" to get started.
+                                <tbody>
+                                    <?php if ($result->num_rows > 0): while ($row = $result->fetch_assoc()): ?>
+                                        <tr>
+                                            <td><?php echo htmlspecialchars($row['subject_code']); ?></td>
+                                            <td><?php echo htmlspecialchars($row['subject_name']); ?></td>
+                                            <td>
+                                                <a href="php/delete_subject.php?id=<?php echo $row['subject_id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this subject?')">Delete</a>
                                             </td>
                                         </tr>
+                                    <?php endwhile; else: ?>
+                                        <tr class="no-data"><td colspan="3">No subjects found.</td></tr>
                                     <?php endif; ?>
                                 </tbody>
                             </table>
@@ -147,43 +112,11 @@ $result = $conn->query($sql);
                     </div>
                 </section>
 
-                <div id="addSubjectModal" class="modal">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h2><i class="fa-solid fa-book"></i> Add New Subject</h2>
-                            <button class="close-btn" onclick="closeAddSubjectModal()">&times;</button>
-                        </div>
-                        <form action="php/add_subject.php" method="POST">
-                            <div class="form-group">
-                                <label>Subject Code</label>
-                                <input type="text" name="subjectCode" placeholder="e.g., DCIT 24" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Subject Name</label>
-                                <input type="text" name="subjectName" placeholder="e.g., Information Management"
-                                    required>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary"
-                                    onclick="closeAddSubjectModal()">Cancel</button>
-                                <button type="submit" class="btn btn-primary">Save Subject</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
                 <section id="students" class="content-section" style="display: none;">
                     <div class="dashboard-display">
                         <div class="table-controls">
-                            <button class="btn btn-primary" onclick="openAddSectionModal()">
-                                <i class="fa-solid fa-plus"></i> Add Section
-                            </button>
-                            <div class="search-box">
-                                <i class="fa-solid fa-search"></i>
-                                <input type="text" id="searchStudents" placeholder="Search students...">
-                            </div>
+                            <button class="btn btn-primary" onclick="openAddSectionModal()"><i class="fa-solid fa-plus"></i> Add Section</button>
                         </div>
-
                         <div class="table-container">
                             <table class="subjects-table">
                                 <thead>
@@ -195,183 +128,24 @@ $result = $conn->query($sql);
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody id="sectionsTableBody">
+                                <tbody>
                                     <?php
-                                    $sec_sql = "SELECT s.*, sub.subject_code 
-                                    FROM sections s 
-                                    JOIN subjects sub ON s.subject_id = sub.subject_id 
-                                    WHERE sub.instructor_id = '$current_instructor'";
+                                    $sec_sql = "SELECT s.*, sub.subject_code FROM sections s JOIN subjects sub ON s.subject_id = sub.subject_id WHERE sub.instructor_id = '$current_instructor'";
                                     $sec_result = $conn->query($sec_sql);
-
-                                    if ($sec_result->num_rows > 0):
-                                        while ($sec = $sec_result->fetch_assoc()): ?>
-                                            <tr>
-                                                <td><?php echo htmlspecialchars($sec['section_name']); ?></td>
-                                                <td><?php echo htmlspecialchars($sec['subject_code']); ?></td>
-                                                <td><?php echo htmlspecialchars($sec['school_year']); ?></td>
-                                                <td><?php echo htmlspecialchars($sec['semester']); ?></td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-info"
-                                                        onclick="viewStudentsInSection(<?php echo $sec['section_id']; ?>)">
-                                                        View Students
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        <?php endwhile;
-                                    else: ?>
-                                        <tr class="no-data">
-                                            <td colspan="6" style="text-align: center; padding: 2rem; color: #999;">
-                                                <i class="fa-solid fa-book"
-                                                    style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
-                                                No sections created yet.
-                                            </td>
+                                    if ($sec_result->num_rows > 0): while ($sec = $sec_result->fetch_assoc()): ?>
+                                        <tr>
+                                            <td><?php echo htmlspecialchars($sec['section_name']); ?></td>
+                                            <td><?php echo htmlspecialchars($sec['subject_code']); ?></td>
+                                            <td><?php echo htmlspecialchars($sec['school_year']); ?></td>
+                                            <td><?php echo htmlspecialchars($sec['semester']); ?></td>
+                                            <td><button class="btn btn-sm btn-info">View Students</button></td>
                                         </tr>
+                                    <?php endwhile; else: ?>
+                                        <tr class="no-data"><td colspan="5">No sections created yet.</td></tr>
                                     <?php endif; ?>
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-                </section>
-
-                <div id="addSectionModal" class="modal">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h2><i class="fa-solid fa-users"></i> Create New Section</h2>
-                            <button class="close-btn" onclick="closeAddSectionModal()">&times;</button>
-                        </div>
-                        <form action="php/add_section.php" method="POST">
-                            <div class="form-group">
-                                <label>Select Subject</label>
-                                <select name="subject_id" required>
-                                    <option value="">-- Choose a Subject --</option>
-                                    <?php
-                                    // Re-run query to populate dropdown
-                                    $subjects_dropdown = $conn->query("SELECT * FROM subjects WHERE instructor_id = '$current_instructor'");
-                                    while ($sub = $subjects_dropdown->fetch_assoc()): ?>
-                                        <option value="<?php echo $sub['subject_id']; ?>">
-                                            <?php echo htmlspecialchars($sub['subject_code'] . " - " . $sub['subject_name']); ?>
-                                        </option>
-                                    <?php endwhile; ?>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Section Name</label>
-                                <input type="text" name="section_name" placeholder="e.g., BSIT 2-1" required>
-                            </div>
-                            <div class="form-group">
-                                <label>School Year</label>
-                                <input type="text" name="school_year" placeholder="2024-2025" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Semester</label>
-                                <select name="semester" required>
-                                    <option value="1st Semester">1st Semester</option>
-                                    <option value="2nd Semester">2nd Semester</option>
-                                </select>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary"
-                                    onclick="closeAddSectionModal()">Cancel</button>
-                                <button type="submit" class="btn btn-primary">Create Section</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <section id="attendance" class="content-section" style="display: none;">
-                    <div class="dashboard-display">
-                        <div class="table-controls"></div>
-                        <div class="table-container">
-                            <table class="subjects-table">
-                                <thead>
-                                    <tr>
-                                        <th>TEST</th>
-                                        <th>TEST</th>
-                                        <th>TEST</th>
-                                        <th>TEST</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="attendanceTableBody">
-                                    <tr class="no-data">
-                                        <td colspan="6" style="text-align: center; padding: 2rem; color: #999;">
-                                            <i class="fa-solid fa-book"
-                                                style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
-                                            No Attendance found.
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="evaluation" class="content-section" style="display: none;">
-                    <div class="dashboard-display">
-                        <div class="table-controls"></div>
-                        <div class="table-container">
-                            <table class="subjects-table">
-                                <thead>
-                                    <tr>
-                                        <th>TEST</th>
-                                        <th>TEST</th>
-                                        <th>TEST</th>
-                                        <th>TEST</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="subjectsTableBody">
-                                    <tr class="no-data">
-                                        <td colspan="6" style="text-align: center; padding: 2rem; color: #999;">
-                                            <i class="fa-solid fa-book"
-                                                style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
-                                            No Evaluation found.
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="analytics" class="content-section" style="display: none;">
-                    <div class="dashboard-display">
-                        <div class="table-controls">
-                        </div>
-
-                        <div class="table-container">
-                            <table class="subjects-table">
-                                <thead>
-                                    <tr>
-                                        <th>TEST</th>
-                                        <th>TEST</th>
-                                        <th>TEST</th>
-                                        <th>TEST</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="subjectsTableBody">
-                                    <tr class="no-data">
-                                        <td colspan="6" style="text-align: center; padding: 2rem; color: #999;">
-                                            <i class="fa-solid fa-book"
-                                                style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
-                                            No Analytics found.
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-
-                <section id="attendance" class="content-section" style="display: none;">
-                </section>
-
-                <section id="evaluation" class="content-section" style="display: none;">
-                    <div class="dashboard-display">
-                    </div>
-                </section>
-
-                <section id="analytics" class="content-section" style="display: none;">
-                    <div class="dashboard-display">
                     </div>
                 </section>
 
@@ -379,57 +153,80 @@ $result = $conn->query($sql);
                     <div class="dashboard-display">
                         <div class="table-controls">
                             <button class="btn btn-primary" onclick="openAddStudentModal()">
-                                <i class="fa-solid fa-plus"></i> Add New Student
+                                <i class="fa-solid fa-user-plus"></i> Add New Student
                             </button>
                             <div class="search-box">
                                 <i class="fa-solid fa-search"></i>
-                                <input type="text" id="enrollmentSearchInput" onkeyup="filterEnrollmentTable()"
-                                    placeholder="Search student name or ID...">
+                                <input type="text" id="enrollmentSearch" onkeyup="filterEnrollmentTable()" placeholder="Search name or ID...">
                             </div>
                         </div>
-
                         <div class="table-container">
                             <table class="subjects-table" id="mainEnrollmentTable">
                                 <thead>
                                     <tr>
-                                        <th><input type="checkbox" id="selectAllStudents"
-                                                onclick="toggleSelectAll(this)"> Select All</th>
+                                        <th><input type="checkbox" id="selectAllStudents" onclick="toggleSelectAll(this)"> Select All</th>
                                         <th>Student Number</th>
                                         <th>Full Name</th>
                                         <th>Email</th>
-                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php
-                                    $allStudentsQuery = "SELECT * FROM students ORDER BY full_name ASC";
-                                    $allStudentsResult = $conn->query($allStudentsQuery);
-
-                                    if ($allStudentsResult->num_rows > 0):
-                                        while ($student = $allStudentsResult->fetch_assoc()): ?>
-                                            <tr>
-                                                <td><input type="checkbox" class="student-checkbox"
-                                                        value="<?php echo $student['student_id']; ?>"></td>
-                                                <td><?php echo htmlspecialchars($student['student_number']); ?></td>
-                                                <td><?php echo htmlspecialchars($student['full_name']); ?></td>
-                                                <td><?php echo htmlspecialchars($student['email'] ?? 'N/A'); ?></td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-info">Edit</button>
-                                                </td>
-                                            </tr>
-                                        <?php endwhile;
-                                    else: ?>
-                                        <tr class="no-data">
-                                            <td colspan="5" style="text-align: center; padding: 2rem; color: #999;">
-                                                No students found in the database.
-                                            </td>
+                                    $allStudents = $conn->query("SELECT * FROM students ORDER BY full_name ASC");
+                                    if ($allStudents->num_rows > 0): while ($st = $allStudents->fetch_assoc()): ?>
+                                        <tr>
+                                            <td><input type="checkbox" class="student-checkbox" value="<?php echo $st['student_id']; ?>"></td>
+                                            <td><?php echo htmlspecialchars($st['student_number']); ?></td>
+                                            <td><?php echo htmlspecialchars($st['full_name']); ?></td>
+                                            <td><?php echo htmlspecialchars($st['email']); ?></td>
                                         </tr>
+                                    <?php endwhile; else: ?>
+                                        <tr class="no-data"><td colspan="4">No students in database.</td></tr>
                                     <?php endif; ?>
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </section>
+
+                <div id="addSubjectModal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2>Add New Subject</h2>
+                            <button class="close-btn" onclick="closeAddSubjectModal()">&times;</button>
+                        </div>
+                        <form action="php/add_subject.php" method="POST">
+                            <div class="form-group"><label>Subject Code</label><input type="text" name="subjectCode" required></div>
+                            <div class="form-group"><label>Subject Name</label><input type="text" name="subjectName" required></div>
+                            <div class="modal-footer"><button type="submit" class="btn btn-primary">Save Subject</button></div>
+                        </form>
+                    </div>
+                </div>
+
+                <div id="addSectionModal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2>Create New Section</h2>
+                            <button class="close-btn" onclick="closeAddSectionModal()">&times;</button>
+                        </div>
+                        <form action="php/add_section.php" method="POST">
+                            <div class="form-group">
+                                <label>Select Subject</label>
+                                <select name="subject_id" required>
+                                    <?php $sub_drop = $conn->query("SELECT * FROM subjects WHERE instructor_id = '$current_instructor'");
+                                    while($s = $sub_drop->fetch_assoc()) echo "<option value='{$s['subject_id']}'>{$s['subject_code']}</option>"; ?>
+                                </select>
+                            </div>
+                            <div class="form-group"><label>Section Name</label><input type="text" name="section_name" required></div>
+                            <div class="form-group"><label>School Year</label><input type="text" name="school_year" required></div>
+                            <div class="form-group">
+                                <label>Semester</label>
+                                <select name="semester"><option>1st Semester</option><option>2nd Semester</option></select>
+                            </div>
+                            <div class="modal-footer"><button type="submit" class="btn btn-primary">Create Section</button></div>
+                        </form>
+                    </div>
+                </div>
 
                 <div id="addStudentModal" class="modal">
                     <div class="modal-content">
@@ -438,30 +235,54 @@ $result = $conn->query($sql);
                             <button class="close-btn" onclick="closeAddStudentModal()">&times;</button>
                         </div>
                         <form action="php/add_new_student.php" method="POST">
-                            <div class="form-group">
-                                <label>Full Name</label>
-                                <input type="text" name="full_name" placeholder="Last Name, First Name M.I." required>
-                            </div>
-                            <div class="form-group">
-                                <label>Student Number</label>
-                                <input type="text" name="student_number" placeholder="e.g., 2023-10001" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Email Address</label>
-                                <input type="email" name="email" placeholder="student@email.com" required>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary"
-                                    onclick="closeAddStudentModal()">Cancel</button>
-                                <button type="submit" class="btn btn-primary">Save Student</button>
-                            </div>
+                            <div class="form-group"><label>Full Name</label><input type="text" name="full_name" placeholder="Last Name, First Name" required></div>
+                            <div class="form-group"><label>Student Number</label><input type="text" name="student_number" required></div>
+                            <div class="form-group"><label>Email</label><input type="email" name="email" required></div>
+                            <div class="modal-footer"><button type="submit" class="btn btn-primary">Save Student</button></div>
                         </form>
                     </div>
                 </div>
+
             </main>
         </div>
     </section>
 
-</body>
+    <script>
+        // Sidebar Navigation Logic
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = this.getAttribute('data-target');
+                document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
+                document.getElementById(target).style.display = 'block';
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
 
+        // Enrollment Table Search
+        function filterEnrollmentTable() {
+            let input = document.getElementById("enrollmentSearch").value.toLowerCase();
+            let rows = document.querySelectorAll("#mainEnrollmentTable tbody tr");
+            rows.forEach(row => {
+                row.style.display = row.innerText.toLowerCase().includes(input) ? "" : "none";
+            });
+        }
+
+        // Select All Checkboxes
+        function toggleSelectAll(source) {
+            document.querySelectorAll('.student-checkbox').forEach(cb => {
+                if (cb.closest('tr').style.display !== 'none') cb.checked = source.checked;
+            });
+        }
+
+        // Modal Controls
+        function openAddSubjectModal() { document.getElementById('addSubjectModal').style.display = 'block'; }
+        function closeAddSubjectModal() { document.getElementById('addSubjectModal').style.display = 'none'; }
+        function openAddSectionModal() { document.getElementById('addSectionModal').style.display = 'block'; }
+        function closeAddSectionModal() { document.getElementById('addSectionModal').style.display = 'none'; }
+        function openAddStudentModal() { document.getElementById('addStudentModal').style.display = 'block'; }
+        function closeAddStudentModal() { document.getElementById('addStudentModal').style.display = 'none'; }
+    </script>
+</body>
 </html>
