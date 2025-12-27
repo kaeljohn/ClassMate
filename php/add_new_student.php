@@ -36,7 +36,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // 2. FORMAT MIDDLE INITIAL
     // Only add the dot if the user provided an initial
-    $middle_name_final = !empty($mi) ? strtoupper($mi) . "." : null;
+    $middle_name_final = !empty($mi) ? strtoupper($mi) . "." : " ";
     
     // 3. GENERATE AUTOMATIC STUDENT NUMBER
     // Get the current max ID to create the next sequential number
