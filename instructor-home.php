@@ -1,0 +1,340 @@
+<?php
+session_start();
+if (!isset($_SESSION['instructor_name'])) {
+    // If not logged in, kick them back to the login page
+    header("Location: instructor-login.php");
+    exit();
+}
+$current_instructor = $_SESSION['instructor_name'];
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ClassMate</title>
+
+    <link rel="icon" type="image/svg+xml" href="SVG/favicon.svg">
+
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+
+    <script src="JavaScript/dashboard.js"></script>
+</head>
+
+<body>
+    <header>
+        <h1>
+            <a href="index.html" class="logo-link">
+                <i class="fa-solid fa-graduation-cap"></i>
+                ClassMate
+            </a>
+        </h1>
+
+        <div class="header-user-info">
+            <span class="welcome-text">Welcome,
+                <strong><?php echo htmlspecialchars($current_instructor); ?>!</strong></span>
+            <a href="php/logout.php" class="account-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </div>
+    </header>
+    <!-- wave part sa header  -->
+    <div class="custom-shape-divider-top-1766060304">
+        <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path
+                d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z"
+                opacity=".25" class="shape-fill"></path>
+            <path
+                d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z"
+                opacity=".5" class="shape-fill"></path>
+            <path
+                d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z"
+                class="shape-fill"></path>
+        </svg>
+    </div>
+    <section class="main-dashboard">
+        <div class="dashboard-box">
+            <nav class="sidebar">
+                <ul class="nav-links">
+                    <li><a href="#" class="nav-btn active" data-target="courses"><i class="fa-solid fa-book-open"></i>
+                            Courses</a></li>
+                    <li><a href="#" class="nav-btn" data-target="students"><i class="fa-solid fa-user-graduate"></i>
+                            Students</a></li>
+                    <li><a href="#" class="nav-btn" data-target="attendance"><i class="fa-solid fa-calendar-check"></i>
+                            Attendance</a></li>
+                    <li><a href="#" class="nav-btn" data-target="evaluation"><i class="fa-solid fa-file-invoice"></i>
+                            Evaluation</a></li>
+                    <li><a href="#" class="nav-btn" data-target="analytics"><i class="fa-solid fa-chart-line"></i>
+                            Analytics</a></li>
+
+                </ul>
+                <div class="sidebar-bottom">
+                    <a href="#" class="nav-btn" data-target="enrollment"><i class="fa-solid fa-circle-plus"></i> Enroll
+                        a Student</a>
+                </div>
+            </nav>
+
+            <main class="content-area">
+                <section id="courses" class="content-section">
+                    <div class="dashboard-display">
+                        <div class="table-controls">
+                            <button class="btn btn-primary" onclick="openAddSubjectModal()">
+                                <i class="fa-solid fa-plus"></i> Add Subject
+                            </button>
+                            <div class="search-box">
+                                <i class="fa-solid fa-search"></i>
+                                <input type="text" id="searchSubjects" placeholder="Search subjects...">
+                            </div>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="subjects-table">
+                                <thead>
+                                    <tr>
+                                        <th>Subject Code</th>
+                                        <th>Subject Name</th>
+                                        <th>Enrolled Students</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="subjectsTableBody">
+                                    <?php if ($result->num_rows > 0): ?>
+                                        <?php while ($row = $result->fetch_assoc()): ?>
+                                            <tr>
+                                                <td><?php echo $row['course_code']; ?></td>
+                                                <td><?php echo $row['section_name']; ?></td>
+                                                <td><?php echo $row['semester']; ?></td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-info">View Students</button>
+                                                    <button class="btn btn-sm btn-danger">Delete</button>
+                                                </td>
+                                            </tr>
+                                        <?php endwhile; ?>
+                                    <?php else: ?>
+                                        <tr class="no-data">
+                                            <td colspan="4" style="text-align: center; padding: 2rem; color: #999;">
+                                                <i class="fa-solid fa-book"
+                                                    style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                                                No sections found. Click "Add Section" to get started.
+                                            </td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+
+
+
+                <div id="addSubjectModal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2><i class="fa-solid fa-book"></i> Add New Subject</h2>
+                            <button class="close-btn" onclick="closeAddSubjectModal()">
+                                <i class="fa-solid fa-times"></i>
+                            </button>
+                        </div>
+                        <form id="addSubjectForm">
+                            <div class="form-group">
+                                <label for="subjectCode">Subject Code</label>
+                                <input type="text" id="subjectCode" name="subjectCode" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="subjectName">Subject Name</label>
+                                <input type="text" id="subjectName" name="subjectName" required>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary"
+                                    onclick="closeAddSubjectModal()">Cancel</button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fa-solid fa-check"></i> Add Subject
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <section id="students" class="content-section" style="display: none;">
+                    <div class="dashboard-display">
+                        <div class="table-controls">
+                            <button class="btn btn-primary" onclick="openAddSectionModal()">
+                                <i class="fa-solid fa-plus"></i> Add Section
+                            </button>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="subjects-table">
+                                <thead>
+                                    <tr>
+                                        <th>TEST</th>
+                                        <th>TEST</th>
+                                        <th>TEST</th>
+                                        <th>TEST</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="subjectsTableBody">
+                                    <tr class="no-data">
+                                        <td colspan="6" style="text-align: center; padding: 2rem; color: #999;">
+                                            <i class="fa-solid fa-book"
+                                                style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                                            No Student found. Click "Add Student" to get started.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+
+
+                </section>
+                <section id="attendance" class="content-section" style="display: none;">
+                    <div class="dashboard-display">
+                        <div class="table-controls"></div>
+                        <div class="table-container">
+                            <table class="subjects-table">
+                                <thead>
+                                    <tr>
+                                        <th>TEST</th>
+                                        <th>TEST</th>
+                                        <th>TEST</th>
+                                        <th>TEST</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="attendanceTableBody">
+                                    <tr class="no-data">
+                                        <td colspan="6" style="text-align: center; padding: 2rem; color: #999;">
+                                            <i class="fa-solid fa-book"
+                                                style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                                            No Attendance found.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="evaluation" class="content-section" style="display: none;">
+                    <div class="dashboard-display">
+                        <div class="table-controls"></div>
+                        <div class="table-container">
+                            <table class="subjects-table">
+                                <thead>
+                                    <tr>
+                                        <th>TEST</th>
+                                        <th>TEST</th>
+                                        <th>TEST</th>
+                                        <th>TEST</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="subjectsTableBody">
+                                    <tr class="no-data">
+                                        <td colspan="6" style="text-align: center; padding: 2rem; color: #999;">
+                                            <i class="fa-solid fa-book"
+                                                style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                                            No Evaluation found.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="analytics" class="content-section" style="display: none;">
+                    <div class="dashboard-display">
+                        <div class="table-controls">
+                        </div>
+
+                        <div class="table-container">
+                            <table class="subjects-table">
+                                <thead>
+                                    <tr>
+                                        <th>TEST</th>
+                                        <th>TEST</th>
+                                        <th>TEST</th>
+                                        <th>TEST</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="subjectsTableBody">
+                                    <tr class="no-data">
+                                        <td colspan="6" style="text-align: center; padding: 2rem; color: #999;">
+                                            <i class="fa-solid fa-book"
+                                                style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                                            No Analytics found.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <div id="addSectionModal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2><i class="fa-solid fa-users"></i> Add New Section</h2>
+                            <button class="close-btn" onclick="closeAddSectionModal()">
+                                <i class="fa-solid fa-times"></i>
+                            </button>
+                        </div>
+                        <form id="addSectionForm">
+                            <div class="form-group">
+                                <label for="sectionName">Section Name</label>
+                                <input type="text" id="sectionName" placeholder="e.g., BSCS 3-1" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="schoolYear">School Year</label>
+                                <input type="text" id="schoolYear" placeholder="e.g., 2024-2025" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="semester">Semester</label>
+                                <select id="semester" required>
+                                    <option value="">Select Semester</option>
+                                    <option value="1st Semester">1st Semester</option>
+                                    <option value="2nd Semester">2nd Semester</option>
+                                </select>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary"
+                                    onclick="closeAddSectionModal()">Cancel</button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fa-solid fa-check"></i> Add Section
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <section id="attendance" class="content-section" style="display: none;">
+                </section>
+
+                <section id="evaluation" class="content-section" style="display: none;">
+                    <div class="dashboard-display">
+                    </div>
+                </section>
+
+                <section id="analytics" class="content-section" style="display: none;">
+                    <div class="dashboard-display">
+                    </div>
+                </section>
+
+                <section id="enrollment" class="content-section" style="display: none;">
+                    <div class="dashboard-display">
+                    </div>
+                </section>
+            </main>
+        </div>
+
+    </section>
+
+</body>
+
+</html>
