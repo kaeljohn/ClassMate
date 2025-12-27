@@ -14,7 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Verify hashed password
         if (password_verify($pass, $row['password'])) {
             $_SESSION['instructor_name'] = $inst_id;
-            header("Location: instructor-home.php");
+            header("Location: ../instructor-home.php");
         } else {
             echo "<script>alert('Incorrect Password'); window.history.back();</script>";
         }

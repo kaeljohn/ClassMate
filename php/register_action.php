@@ -8,7 +8,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $sql = "INSERT INTO instructors (instructor_id, password) VALUES ('$inst_id', '$pass')";
 
     if ($conn->query($sql) === TRUE) {
-        echo "<script>alert('Account created!'); window.location.href='instructor-login.php';</script>";
+        echo "<script>alert('Account created!'); window.location.href='../instructor-login.php';</script>";
     } else {
         echo "Error: " . $conn->error;
     }

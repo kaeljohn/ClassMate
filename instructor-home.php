@@ -40,7 +40,7 @@ $current_instructor = $_SESSION['instructor_name'];
         <div class="header-user-info">
             <span class="welcome-text">Welcome,
                 <strong><?php echo htmlspecialchars($current_instructor); ?>!</strong></span>
-            <a href="php/logout.php" class="account-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            <a href="logout.php" class="account-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
         </div>
     </header>
     <!-- wave part sa header  -->
