@@ -119,10 +119,10 @@ $result = $conn->query($sql);
                                                 <td>0</td>
 
                                                 <td>
-                                                    <a href="view-section.php?id=<?php echo $row['subject_id']; ?>"
-                                                        class="btn btn-sm btn-info">
+                                                    <button class="btn btn-sm btn-info"
+                                                        onclick="viewStudentsBySubject(<?php echo $row['subject_id']; ?>)">
                                                         View Students
-                                                    </a>
+                                                    </button>
                                                     <a href="php/delete_subject.php?id=<?php echo $row['subject_id']; ?>"
                                                         class="btn btn-sm btn-danger"
                                                         onclick="return confirm('Are you sure you want to delete this subject?')">
