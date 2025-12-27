@@ -31,7 +31,7 @@ $result = $conn->query($sql);
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/dashboard.css">
 
-    <script src="JavaScript/dashboard.js"></script>
+    <script src="js/modals.js"></script>
 </head>
 
 <body>
