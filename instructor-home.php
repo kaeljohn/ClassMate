@@ -129,8 +129,6 @@ $result = $conn->query($sql);
             }
         }
     </style>
-
-    <script src="js/instructor-dashboard.js"></script>
 </head>
 
 <body>
@@ -419,6 +417,9 @@ $result = $conn->query($sql);
             </main>
         </div>
     </section>
+
+
+    <script src="js/instructor-dashboard.js"></script>
 </body>
 
 </html>
