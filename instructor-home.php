@@ -25,7 +25,8 @@ $result = $conn->query($sql);
     <title>ClassMate - Instructor Dashboard</title>
 
     <link rel="icon" type="image/svg+xml" href="SVG/favicon.svg">
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/header.css">
@@ -33,20 +34,43 @@ $result = $conn->query($sql);
 
     <style>
         /* Table and UI Enhancements */
-        .table-container { overflow-x: auto; margin-top: 20px; }
-        .student-checkbox { cursor: pointer; transform: scale(1.2); }
-        .search-box input { padding: 8px 35px 8px 15px; border-radius: 20px; border: 1px solid #ddd; }
-        
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        .student-checkbox {
+            cursor: pointer;
+            transform: scale(1.2);
+        }
+
+        .search-box input {
+            padding: 8px 35px 8px 15px;
+            border-radius: 20px;
+            border: 1px solid #ddd;
+        }
+
         /* Name Row Flex for Modals */
-        .name-row { display: flex; gap: 10px; }
-        .name-row .form-group { flex: 2; }
-        .name-row .form-group.mi { flex: 0.5; }
+        .name-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .name-row .form-group {
+            flex: 2;
+        }
+
+        .name-row .form-group.mi {
+            flex: 0.5;
+        }
 
         /* Modern Feedback Backdrop */
         .modal-overlay {
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: rgba(15, 23, 42, 0.8);
             backdrop-filter: blur(8px);
             display: flex;
@@ -61,24 +85,47 @@ $result = $conn->query($sql);
             max-width: 400px;
             border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
             text-align: center;
             padding: 30px;
             animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .feedback-icon { font-size: 3rem; margin-bottom: 15px; }
-        .error .feedback-icon { color: #ef4444; }
-        .success .feedback-icon { color: #10b981; }
-        
+        .feedback-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .error .feedback-icon {
+            color: #ef4444;
+        }
+
+        .success .feedback-icon {
+            color: #10b981;
+        }
+
         .feedback-btn {
-            width: 100%; padding: 12px; border: none; border-radius: 12px;
-            background: #1e293b; color: white; font-weight: 600; cursor: pointer; margin-top: 20px;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            background: #1e293b;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
         }
 
         @keyframes modalPop {
-            from { opacity: 0; transform: scale(0.8); }
-            to { opacity: 1; transform: scale(1); }
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
     </style>
 </head>
@@ -100,7 +147,8 @@ $result = $conn->query($sql);
             </a>
         </h1>
         <div class="header-user-info">
-            <span class="welcome-text">Welcome, <strong><?php echo htmlspecialchars($current_instructor); ?>!</strong></span>
+            <span class="welcome-text">Welcome,
+                <strong><?php echo htmlspecialchars($current_instructor); ?>!</strong></span>
             <a href="logout.php" class="account-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
         </div>
     </header>
@@ -119,9 +167,9 @@ $result = $conn->query($sql);
                 class="shape-fill"></path>
         </svg>
     </div>
-    
 
-    
+
+
 
     <section class="main-dashboard">
         <div class="dashboard-box">
@@ -139,7 +187,8 @@ $result = $conn->query($sql);
                             Analytics</a></li>
                 </ul>
                 <div class="sidebar-bottom">
-                    <a href="#" class="nav-btn" data-target="enrollment"><i class="fa-solid fa-circle-plus"></i> Manage Students</a>
+                    <a href="#" class="nav-btn" data-target="enrollment"><i class="fa-solid fa-circle-plus"></i> Manage
+                        Students</a>
                 </div>
             </nav>
 
@@ -233,6 +282,28 @@ $result = $conn->query($sql);
                             <button class="btn btn-primary" onclick="openAddStudentModal()">
                                 <i class="fa-solid fa-user-plus"></i> Add New Student
                             </button>
+                            <div class="assign-controls"
+                                style="display: inline-block; margin-left: 20px; padding: 10px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;">
+                                <label style="font-size: 0.85rem; font-weight: 600;">Assign Selected to:</label>
+                                <select id="targetSection"
+                                    style="padding: 5px; border-radius: 5px; border: 1px solid #cbd5e1;">
+                                    <option value="">-- Select Section --</option>
+                                    <?php
+                                    // Re-fetch sections for the dropdown
+                                    $sec_dropdown = $conn->query("SELECT s.section_id, s.section_name, sub.subject_code 
+                                    FROM sections s 
+                                    JOIN subjects sub ON s.subject_id = sub.subject_id 
+                                    WHERE sub.instructor_id = '$current_instructor'");
+                                    while ($s = $sec_dropdown->fetch_assoc()) {
+                                        echo "<option value='{$s['section_id']}'>{$s['section_name']} ({$s['subject_code']})</option>";
+                                    }
+                                    ?>
+                                </select>
+                                <button class="btn btn-primary" style="background: #10b981; border: none;"
+                                    onclick="assignStudents()">
+                                    <i class="fa-solid fa-link"></i> Bulk Assign
+                                </button>
+                            </div>
                             <div class="search-box">
                                 <i class="fa-solid fa-search"></i>
                                 <input type="text" id="enrollmentSearch" onkeyup="filterEnrollmentTable()"
@@ -371,7 +442,7 @@ $result = $conn->query($sql);
     <script>
         // 1. Sidebar Navigation
         document.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
+            btn.addEventListener('click', function (e) {
                 e.preventDefault();
                 const target = this.getAttribute('data-target');
                 document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
@@ -388,8 +459,8 @@ $result = $conn->query($sql);
             card.className = 'feedback-card ' + type;
             document.getElementById('modalTitle').innerText = title;
             document.getElementById('modalMsg').innerText = message;
-            document.getElementById('feedbackIcon').innerHTML = (type === 'error') 
-                ? '<i class="fa-solid fa-triangle-exclamation"></i>' 
+            document.getElementById('feedbackIcon').innerHTML = (type === 'error')
+                ? '<i class="fa-solid fa-triangle-exclamation"></i>'
                 : '<i class="fa-solid fa-circle-check"></i>';
             modal.style.display = 'flex';
         }
@@ -399,11 +470,11 @@ $result = $conn->query($sql);
         }
 
         // 3. AJAX Registration
-        document.getElementById('quickRegisterForm').addEventListener('submit', function(e) {
+        document.getElementById('quickRegisterForm').addEventListener('submit', function (e) {
             e.preventDefault();
             const btn = document.getElementById('regBtn');
             const errorDiv = document.getElementById('modalError');
-            
+
             btn.disabled = true;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
 
@@ -437,6 +508,46 @@ $result = $conn->query($sql);
             });
         }
 
+        function assignStudents() {
+            const sectionId = document.getElementById('targetSection').value;
+            const selectedCheckboxes = document.querySelectorAll('.student-checkbox:checked');
+
+            if (!sectionId) {
+                showFeedback('error', 'Missing Section', 'Please select a section first.');
+                return;
+            }
+
+            if (selectedCheckboxes.length === 0) {
+                showFeedback('error', 'No Selection', 'Please check at least one student.');
+                return;
+            }
+
+            // Gather IDs into an array
+            const studentIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+
+            // Send to server
+            fetch('php/assign_students.php', {
+                method: 'POST',
+                headers: { 'Content-Type: application/json' },
+                body: JSON.stringify({
+                    section_id: sectionId,
+                    student_ids: studentIds
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showFeedback('success', 'Assigned!', `${data.count} students enrolled successfully.`);
+                        // Uncheck all
+                        document.querySelectorAll('.student-checkbox').forEach(cb => cb.checked = false);
+                        document.getElementById('selectAllStudents').checked = false;
+                    } else {
+                        showFeedback('error', 'Assignment Failed', data.message);
+                    }
+                })
+                .catch(err => showFeedback('error', 'Server Error', 'Could not complete bulk assignment.'));
+        }
+
         // Modal Controls
         function openAddSubjectModal() { document.getElementById('addSubjectModal').style.display = 'block'; }
         function closeAddSubjectModal() { document.getElementById('addSubjectModal').style.display = 'none'; }
@@ -446,4 +557,5 @@ $result = $conn->query($sql);
         function closeAddStudentModal() { document.getElementById('addStudentModal').style.display = 'none'; }
     </script>
 </body>
+
 </html>
