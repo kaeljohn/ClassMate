@@ -66,28 +66,45 @@ $result = $conn->query($sql);
 </head>
 
 <body>
-    <?php if (isset($_GET['error']) || isset($_GET['status'])): ?>
-        <div id="statusOverlay" class="status-overlay">
-            <div class="status-card <?php echo isset($_GET['error']) ? 'error-card' : 'success-card'; ?>">
-                <div class="status-icon">
-                    <?php if (isset($_GET['error'])): ?>
-                        <i class="fa-solid fa-circle-xmark"></i>
-                    <?php else: ?>
-                        <i class="fa-solid fa-circle-check"></i>
-                    <?php endif; ?>
+    <?php
+    $showModal = false;
+    $modalType = ""; // success, error, or info
+    $modalTitle = "";
+    $modalMsg = "";
+
+    if (isset($_GET['error'])) {
+        $showModal = true;
+        $modalType = "error";
+        $modalTitle = "Action Denied";
+        $modalMsg = ($_GET['error'] == 'exists') ? "This student is already registered in the system." : "An unexpected error occurred.";
+    } elseif (isset($_GET['status']) && $_GET['status'] == 'success') {
+        $showModal = true;
+        $modalType = "success";
+        $modalTitle = "Registration Complete";
+        $modalMsg = "The student has been added and a unique ID has been assigned.";
+    }
+    ?>
+
+    <?php if ($showModal): ?>
+        <div id="universalModal" class="modal-overlay">
+            <div class="feedback-card <?php echo $modalType; ?>">
+                <div class="feedback-header">
+                    <div class="feedback-icon">
+                        <?php if ($modalType == "error"): ?>
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        <?php else: ?>
+                            <i class="fa-solid fa-circle-check"></i>
+                        <?php endif; ?>
+                    </div>
+                    <button class="modal-close-icon" onclick="closeFeedback()">&times;</button>
                 </div>
-                <div class="status-text">
-                    <h3><?php echo isset($_GET['error']) ? 'Registration Failed' : 'Success!'; ?></h3>
-                    <p>
-                        <?php
-                        if ($_GET['error'] == 'exists')
-                            echo "This student is already registered in the system.";
-                        elseif ($_GET['status'] == 'success')
-                            echo "Student successfully added and ID generated.";
-                        ?>
-                    </p>
+                <div class="feedback-content">
+                    <h2><?php echo $modalTitle; ?></h2>
+                    <p><?php echo $modalMsg; ?></p>
                 </div>
-                <button class="status-btn" onclick="closeStatusOverlay()">Dismiss</button>
+                <div class="feedback-footer">
+                    <button class="feedback-btn" onclick="closeFeedback()">Acknowledge</button>
+                </div>
             </div>
         </div>
     <?php endif; ?>

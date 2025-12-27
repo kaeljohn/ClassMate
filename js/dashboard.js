@@ -38,3 +38,21 @@ document.addEventListener("DOMContentLoaded", function() {
     // form listener setup
     setupFormListeners();
 });
+
+function closeFeedback() {
+    const modal = document.getElementById('universalModal');
+    if (modal) {
+        // Smoothly fade out before hiding
+        modal.style.transition = "opacity 0.3s";
+        modal.style.opacity = "0";
+        
+        setTimeout(() => {
+            modal.style.display = "none";
+            // Remove the error/status from URL so it doesn't pop up again on refresh
+            const url = new URL(window.location);
+            url.searchParams.delete('error');
+            url.searchParams.delete('status');
+            window.history.replaceState({}, '', url);
+        }, 300);
+    }
+}
