@@ -32,8 +32,6 @@ $result = $conn->query($sql);
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/dashboard.css">
 
-    <script></script>
-
     <style>
         .table-container {
             overflow-x: auto;
@@ -68,49 +66,6 @@ $result = $conn->query($sql);
 </head>
 
 <body>
-    <?php
-    $showModal = false;
-    $modalType = ""; // success, error, or info
-    $modalTitle = "";
-    $modalMsg = "";
-
-    if (isset($_GET['error'])) {
-        $showModal = true;
-        $modalType = "error";
-        $modalTitle = "Action Denied";
-        $modalMsg = ($_GET['error'] == 'exists') ? "This student is already registered in the system." : "An unexpected error occurred.";
-    } elseif (isset($_GET['status']) && $_GET['status'] == 'success') {
-        $showModal = true;
-        $modalType = "success";
-        $modalTitle = "Registration Complete";
-        $modalMsg = "The student has been added and a unique ID has been assigned.";
-    }
-    ?>
-
-    <?php if ($showModal): ?>
-        <div id="universalModal" class="modal-overlay">
-            <div class="feedback-card <?php echo $modalType; ?>">
-                <div class="feedback-header">
-                    <div class="feedback-icon">
-                        <?php if ($modalType == "error"): ?>
-                            <i class="fa-solid fa-triangle-exclamation"></i>
-                        <?php else: ?>
-                            <i class="fa-solid fa-circle-check"></i>
-                        <?php endif; ?>
-                    </div>
-                    <button class="modal-close-icon" onclick="closeFeedback()">&times;</button>
-                </div>
-                <div class="feedback-content">
-                    <h2><?php echo $modalTitle; ?></h2>
-                    <p><?php echo $modalMsg; ?></p>
-                </div>
-                <div class="feedback-footer">
-                    <button class="feedback-btn" onclick="closeFeedback()">Acknowledge</button>
-                </div>
-            </div>
-        </div>
-    <?php endif; ?>
-
     <header>
         <h1>
             <a href="index.html" class="logo-link">
@@ -123,6 +78,22 @@ $result = $conn->query($sql);
             <a href="logout.php" class="account-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
         </div>
     </header>
+
+    <div id="universalModal" class="modal-overlay" style="display: none;">
+        <div id="feedbackCard" class="feedback-card">
+            <div class="feedback-header">
+                <div id="feedbackIcon" class="feedback-icon"></div>
+                <button class="modal-close-icon" onclick="closeFeedback()">&times;</button>
+            </div>
+            <div class="feedback-content">
+                <h2 id="modalTitle"></h2>
+                <p id="modalMsg"></p>
+            </div>
+            <div class="feedback-footer">
+                <button id="modalBtn" class="feedback-btn" onclick="closeFeedback()">Acknowledge</button>
+            </div>
+        </div>
+    </div>
 
     <div class="custom-shape-divider-top-1766060304">
         <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">

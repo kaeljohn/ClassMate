@@ -39,20 +39,53 @@ document.addEventListener("DOMContentLoaded", function() {
     setupFormListeners();
 });
 
-function closeFeedback() {
+// Function to show the feedback modal
+function showFeedback(type, title, message) {
     const modal = document.getElementById('universalModal');
-    if (modal) {
-        // Smoothly fade out before hiding
-        modal.style.transition = "opacity 0.3s";
-        modal.style.opacity = "0";
-        
-        setTimeout(() => {
-            modal.style.display = "none";
-            // Remove the error/status from URL so it doesn't pop up again on refresh
-            const url = new URL(window.location);
-            url.searchParams.delete('error');
-            url.searchParams.delete('status');
-            window.history.replaceState({}, '', url);
-        }, 300);
-    }
+    const card = document.getElementById('feedbackCard');
+    const icon = document.getElementById('feedbackIcon');
+    const titleEl = document.getElementById('modalTitle');
+    const msgEl = document.getElementById('modalMsg');
+
+    // Reset classes
+    card.className = 'feedback-card ' + type;
+    
+    // Set Content
+    titleEl.innerText = title;
+    msgEl.innerText = message;
+    icon.innerHTML = (type === 'error') 
+        ? '<i class="fa-solid fa-triangle-exclamation"></i>' 
+        : '<i class="fa-solid fa-circle-check"></i>';
+
+    // Show Modal
+    modal.style.display = 'flex';
 }
+
+function closeFeedback() {
+    document.getElementById('universalModal').style.display = 'none';
+}
+
+// Intercept the Registration Form
+document.querySelector('#addStudentModal form').addEventListener('submit', function(e) {
+    e.preventDefault(); // Stop page reload
+
+    const formData = new FormData(this);
+
+    fetch('php/add_new_student.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json()) // We expect JSON back from PHP
+    .then(data => {
+        if (data.status === 'exists') {
+            showFeedback('error', 'Already Exists', 'This student is already in the database.');
+        } else if (data.status === 'success') {
+            showFeedback('success', 'Registered!', 'Student has been added successfully.');
+            closeAddStudentModal(); // Close the input form
+            // Optionally: reload the table or add the row via JS
+        }
+    })
+    .catch(error => {
+        showFeedback('error', 'System Error', 'Something went wrong on the server.');
+    });
+});
