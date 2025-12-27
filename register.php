@@ -58,11 +58,10 @@
                     <i class="fa-solid fa-lock"></i>
                     <input type="password" name="password" placeholder="Create Password" required>
                 </div>
-                <button type="submit" class="btn btn-primary">Register</button>
                 <p style="margin-bottom: 10px; font-size: 12px;">Already have an account? <a
                         style="text-decoration: underline; color: var(--primary);"
-                        href="instructor-login.html">Login</a></p>
-                <button class="btn btn-primary" onclick="window.location.href='instructor-login.php'">Register</button>
+                        href="instructor-login.php">Login</a></p>
+                <button type="submit" class="btn btn-primary">Register</button>
             </form>
         </div>
     </section>
