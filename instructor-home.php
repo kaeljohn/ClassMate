@@ -141,14 +141,16 @@ $current_instructor = $_SESSION['instructor_name'];
                                 <i class="fa-solid fa-times"></i>
                             </button>
                         </div>
-                        <form id="addSubjectForm">
+                        <form id="addSubjectForm" action="php/add_subject.php" method="POST">
                             <div class="form-group">
                                 <label for="subjectCode">Subject Code</label>
-                                <input type="text" id="subjectCode" name="subjectCode" required>
+                                <input type="text" id="subjectCode" name="subject_code" placeholder="e.g. DCIT 24"
+                                    required>
                             </div>
                             <div class="form-group">
                                 <label for="subjectName">Subject Name</label>
-                                <input type="text" id="subjectName" name="subjectName" required>
+                                <input type="text" id="subjectName" name="subject_name"
+                                    placeholder="e.g. Information Management" required>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary"
@@ -297,13 +299,11 @@ $current_instructor = $_SESSION['instructor_name'];
                             </div>
                             <div class="form-group">
                                 <label for="schoolYear">School Year</label>
-                                <input type="text" name="school_year" id="schoolYear" placeholder="e.g. 2024-2025"
-                                    required>
+                                <input type="text" id="schoolYear" placeholder="e.g., 2024-2025" required>
                             </div>
                             <div class="form-group">
                                 <label>Semester</label>
                                 <select name="semester" required>
-                                    <option value="" disabled selected>Select Semester</option>
                                     <option value="1st Semester">1st Semester</option>
                                     <option value="2nd Semester">2nd Semester</option>
                                 </select>
