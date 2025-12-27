@@ -297,11 +297,13 @@ $current_instructor = $_SESSION['instructor_name'];
                             </div>
                             <div class="form-group">
                                 <label for="schoolYear">School Year</label>
-                                <input type="text" id="schoolYear" placeholder="e.g., 2024-2025" required>
+                                <input type="text" name="school_year" id="schoolYear" placeholder="e.g. 2024-2025"
+                                    required>
                             </div>
                             <div class="form-group">
                                 <label>Semester</label>
                                 <select name="semester" required>
+                                    <option value="" disabled selected>Select Semester</option>
                                     <option value="1st Semester">1st Semester</option>
                                     <option value="2nd Semester">2nd Semester</option>
                                 </select>
