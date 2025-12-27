@@ -2,17 +2,27 @@
 session_start();
 include 'db_connect.php';
 
+// Check if user is logged in
+if (!isset($_SESSION['instructor_name'])) {
+    header("Location: ../instructor-login.php");
+    exit();
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $code = $_POST['course_code'];
     $name = $_POST['section_name'];
     $sem = $_POST['semester'];
-    $inst = $_SESSION['instructor_name'];
+    $inst = $_SESSION['instructor_name']; // Get the ID from the session
 
-    $sql = "INSERT INTO sections (course_code, section_name, semester, instructor_id) 
-            VALUES ('$code', '$name', '$sem', '$inst')";
+    // Prepared statement for security (bonus marks!)
+    $stmt = $conn->prepare("INSERT INTO sections (course_code, section_name, semester, instructor_id) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("ssss", $code, $name, $sem, $inst);
 
-    if ($conn->query($sql)) {
-        header("Location: ../instructor-home.php?success=1");
+    if ($stmt->execute()) {
+        header("Location: ../instructor-home.php?status=success");
+    } else {
+        echo "Error: " . $stmt->error;
     }
+    $stmt->close();
 }
 ?>

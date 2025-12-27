@@ -286,19 +286,22 @@ $current_instructor = $_SESSION['instructor_name'];
                                 <i class="fa-solid fa-times"></i>
                             </button>
                         </div>
-                        <form id="addSectionForm">
+                        <form id="addSectionForm" action="php/add_section.php" method="POST">
                             <div class="form-group">
-                                <label for="sectionName">Section Name</label>
-                                <input type="text" id="sectionName" placeholder="e.g., BSCS 3-1" required>
+                                <label>Course Code</label>
+                                <input type="text" name="course_code" placeholder="e.g. DCIT 24" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Section Name</label>
+                                <input type="text" name="section_name" placeholder="e.g. BSIT 2-1" required>
                             </div>
                             <div class="form-group">
                                 <label for="schoolYear">School Year</label>
                                 <input type="text" id="schoolYear" placeholder="e.g., 2024-2025" required>
                             </div>
                             <div class="form-group">
-                                <label for="semester">Semester</label>
-                                <select id="semester" required>
-                                    <option value="">Select Semester</option>
+                                <label>Semester</label>
+                                <select name="semester" required>
                                     <option value="1st Semester">1st Semester</option>
                                     <option value="2nd Semester">2nd Semester</option>
                                 </select>
@@ -306,9 +309,7 @@ $current_instructor = $_SESSION['instructor_name'];
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary"
                                     onclick="closeAddSectionModal()">Cancel</button>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fa-solid fa-check"></i> Add Section
-                                </button>
+                                <button type="submit" class="btn btn-primary">Add Section</button>
                             </div>
                         </form>
                     </div>
