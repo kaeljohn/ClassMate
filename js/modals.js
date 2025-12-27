@@ -75,3 +75,26 @@ function viewStudentsInSection(sectionId) {
 function closeViewStudentsModal() {
     document.getElementById('viewStudentsModal').style.display = 'none';
 }
+
+function filterStudents() {
+    let input = document.getElementById("studentSearch").value.toLowerCase();
+    let rows = document.querySelectorAll("#enrollmentTable tbody tr");
+
+    rows.forEach(row => {
+        let text = row.innerText.toLowerCase();
+        row.style.display = text.includes(input) ? "" : "none";
+    });
+}
+
+function toggleAll(source) {
+    let checkboxes = document.querySelectorAll('input[name="student_ids[]"]');
+    for(let checkbox of checkboxes) {
+        checkbox.checked = source.checked;
+    }
+}
+
+// Function to open modal and set the section ID
+function openEnrollment(sectionId) {
+    document.getElementById('active_section_id').value = sectionId;
+    document.getElementById('enrollmentModal').style.display = 'block';
+}
