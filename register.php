@@ -44,7 +44,7 @@
     <section class="login">
         <div class="login-box">
             <h2>Register</h2>
-            <form action="register_action.php" method="POST">
+            <form action="php/register_action.php" method="POST">
                 <div class="input-group">
                     <i class="fa-solid fa-user"></i>
                     <input type="text" name="instructor_id" placeholder="Create Instructor ID" required>
