@@ -117,6 +117,48 @@ if (sectionForm) {
   });
 }
 
+function confirmDelete(id, code) {
+  const modal = document.getElementById("universalModal");
+  const card = document.getElementById("feedbackCard");
+
+  // Set style to "warning/error"
+  card.className = "feedback-card error";
+  document.getElementById("feedbackIcon").innerHTML =
+    '<i class="fa-solid fa-triangle-exclamation"></i>';
+  document.getElementById("modalTitle").innerText = "Confirm Deletion";
+  document.getElementById(
+    "modalMsg"
+  ).innerText = `Are you sure you want to delete ${code}? This will also delete all sections under this subject.`;
+
+  // Replace the single button with two buttons: Cancel and Confirm
+  const footer = document.querySelector(".feedback-btn").parentElement;
+  footer.innerHTML = `
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button class="feedback-btn" style="background: #64748b;" onclick="closeFeedback()">Cancel</button>
+            <button class="feedback-btn" style="background: #ef4444;" onclick="executeDelete(${id})">Yes, Delete</button>
+        </div>
+    `;
+
+  modal.style.display = "flex";
+}
+
+function executeDelete(id) {
+  fetch(`php/delete_subject.php?id=${id}`, { method: "GET" })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.status === "success") {
+        // Remove the row from the table instantly
+        document.getElementById(`subject-row-${id}`).remove();
+        showFeedback("success", "Deleted!", "The subject has been removed.");
+
+        // Reset the modal buttons back to normal for the next time it's used
+        setTimeout(() => location.reload(), 1500);
+      } else {
+        showFeedback("error", "Error", data.message);
+      }
+    });
+}
+
 // Modal Controls
 function openAddSubjectModal() {
   document.getElementById("addSubjectModal").style.display = "block";

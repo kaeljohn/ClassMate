@@ -1,20 +1,21 @@
 <?php
+header('Content-Type: application/json');
 session_start();
 include 'db_connect.php';
 
-if (isset($_GET['id']) && isset($_SESSION['instructor_name'])) {
+if (isset($_GET['id'])) {
     $id = $_GET['id'];
-    $inst = $_SESSION['instructor_name'];
-
-    // Security check: only delete if the subject belongs to this instructor
-    $stmt = $conn->prepare("DELETE FROM subjects WHERE subject_id = ? AND instructor_id = ?");
-    $stmt->bind_param("is", $id, $inst);
+    
+    // Use a prepared statement for security
+    $stmt = $conn->prepare("DELETE FROM subjects WHERE subject_id = ?");
+    $stmt->bind_param("i", $id);
 
     if ($stmt->execute()) {
-        header("Location: ../instructor-home.php?deleted=1");
+        echo json_encode(['status' => 'success']);
     } else {
-        echo "Error deleting record: " . $conn->error;
+        echo json_encode(['status' => 'error', 'message' => 'Failed to delete: ' . $conn->error]);
     }
-    $stmt->close();
+} else {
+    echo json_encode(['status' => 'error', 'message' => 'No ID provided.']);
 }
 ?>

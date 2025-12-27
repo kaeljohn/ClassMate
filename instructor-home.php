@@ -216,13 +216,14 @@ $result = $conn->query($sql);
                                 <tbody>
                                     <?php if ($result->num_rows > 0):
                                         while ($row = $result->fetch_assoc()): ?>
-                                            <tr>
+                                            <tr id="subject-row-<?php echo $row['subject_id']; ?>">
                                                 <td><?php echo htmlspecialchars($row['subject_code']); ?></td>
                                                 <td><?php echo htmlspecialchars($row['subject_name']); ?></td>
                                                 <td>
-                                                    <a href="php/delete_subject.php?id=<?php echo $row['subject_id']; ?>"
-                                                        class="btn btn-sm btn-danger"
-                                                        onclick="return confirm('Delete this subject?')">Delete</a>
+                                                    <button class="btn btn-sm btn-danger"
+                                                        onclick="confirmDelete(<?php echo $row['subject_id']; ?>, '<?php echo htmlspecialchars($row['subject_code']); ?>')">
+                                                        <i class="fa-solid fa-trash"></i> Delete
+                                                    </button>
                                                 </td>
                                             </tr>
                                         <?php endwhile; else: ?>
@@ -417,7 +418,6 @@ $result = $conn->query($sql);
             </main>
         </div>
     </section>
-
 
     <script src="js/instructor-dashboard.js"></script>
 </body>
