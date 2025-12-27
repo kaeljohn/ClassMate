@@ -308,7 +308,7 @@ $result = $conn->query($sql);
                                     <label>First Name</label>
                                     <input type="text" name="first_name" required>
                                 </div>
-                                <div class="form-group" style="flex: 0.3;">
+                                <div class="form-group">
                                     <label>M.I.</label>
                                     <input type="text" name="middle_name" maxlength="2" placeholder="A.">
                                 </div>
