@@ -174,15 +174,15 @@ $result = $conn->query($sql);
                 <section id="students" class="content-section" style="display: none;">
                     <div class="dashboard-display">
                         <div class="table-controls">
-                            <button class="btn btn-primary" onclick="openAddSubjectModal()">
-                                <i class="fa-solid fa-plus"></i> Add Subject
+                            <button class="btn btn-primary" onclick="openAddSectionModal()">
+                                <i class="fa-solid fa-plus"></i> Add Section
                             </button>
                             <div class="search-box">
                                 <i class="fa-solid fa-search"></i>
-                                <input type="text" id="searchSubjects" placeholder="Search subjects...">
+                                <input type="text" id="searchStudents" placeholder="Search students...">
                             </div>
                         </div>
-                        
+
                         <div class="table-container">
                             <table class="subjects-table">
                                 <thead>
@@ -380,8 +380,51 @@ $result = $conn->query($sql);
                 </section>
             </main>
         </div>
-
     </section>
+
+    <div id="viewStudentsModal" class="modal">
+        <div class="modal-content" style="width: 80%; max-width: 800px;">
+            <div class="modal-header">
+                <h2 id="modalSectionTitle"><i class="fa-solid fa-user-graduate"></i> Section Students</h2>
+                <button class="close-btn" onclick="closeViewStudentsModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                    <h4>Student List</h4>
+                    <form action="php/enroll_to_section.php" method="POST" style="display: flex; gap: 10px;">
+                        <input type="hidden" name="section_id" id="hidden_section_id">
+                        <select name="student_id" required style="padding: 8px; border-radius: 5px;">
+                            <option value="">-- Select Student to Enroll --</option>
+                            <?php
+                            // Fetch all students NOT yet in this specific section (conceptually)
+                            // For simplicity, we fetch all students here
+                            $all_students = $conn->query("SELECT student_id, first_name, last_name FROM students ORDER BY last_name");
+                            while ($st = $all_students->fetch_assoc()): ?>
+                                <option value="<?php echo $st['student_id']; ?>">
+                                    <?php echo htmlspecialchars($st['last_name'] . ", " . $st['first_name']); ?>
+                                </option>
+                            <?php endwhile; ?>
+                        </select>
+                        <button type="submit" class="btn btn-primary btn-sm">Add to Section</button>
+                    </form>
+                </div>
+
+                <div class="table-container">
+                    <table class="subjects-table">
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>Name</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sectionStudentsList">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </body>
 
