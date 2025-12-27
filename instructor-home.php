@@ -32,6 +32,8 @@ $result = $conn->query($sql);
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/dashboard.css">
 
+    <script></script>
+
     <style>
         .table-container {
             overflow-x: auto;
