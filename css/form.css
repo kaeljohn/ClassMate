@@ -1,0 +1,92 @@
+
+
+        /* MALI TO NALIMUTAN KO PANO I HIWALAY*/
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f3eefc;
+            margin: 0;
+        }
+
+        .form-container {
+            max-width: 640px;
+            margin: auto;
+        }
+
+        .form-header {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 24px;
+            border-top: 10px solid #3a53b7;
+            margin-bottom: 16px;
+        }
+
+        .form-header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 500;
+        }
+
+        .form-header p {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #444;
+        }
+
+        .required {
+            color: red;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        .form-card {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .form-card label {
+            font-weight: 500;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .form-card small {
+            color: #666;
+            font-size: 13px;
+            display: block;
+            margin-bottom: 12px;
+        }   
+
+        .form-card input {
+            width: 100%;
+            border: none;
+            border-bottom: 1px solid #ccc;
+            font-size: 16px;
+            padding: 8px 4px;
+            outline: none;
+        }
+
+        .form-card input:focus {
+            border-bottom: 2px solid #3a53b7;
+        }
+
+        .submit-btn {
+            background: #3a53b7;
+            color: #fff;
+            border: none;
+            padding: 10px 24px;
+            font-size: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .submit-btn:hover {
+            background: #3a53b7;
+        }
+
+        .footer {
+            font-size: 12px;
+            color: #666;
+            margin-top: 16px;
+        }

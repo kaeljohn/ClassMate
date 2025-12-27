@@ -1,0 +1,123 @@
+.card {
+    background: transparent;
+    border-radius: 0;
+    padding: 2.5rem 0;
+    margin-bottom: 2rem;
+    box-shadow: none;
+    transition: none;
+}
+
+.card:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.card h2 {
+    color: var(--primary);
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    border-bottom: 3px solid var(--primary);
+    padding-bottom: 0.5rem;
+}
+
+.card p {
+    color: var(--primary);
+    line-height: 1.8;
+    font-size: 1.05rem;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.feature-card {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: var(--radius);
+    text-align: center;
+    transition: transform 0.3s ease;
+    box-shadow: 0 4px 10px rgba(4, 156, 216, 0.3);
+}
+
+.feature-card:hover {
+    transform: scale(1.05);
+}
+
+.feature-card i {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.feature-card h3 {
+    font-size: 1.3rem;
+    margin-bottom: 0.75rem;
+}
+
+.feature-card p {
+    color: rgba(255,255,255,0.95);
+    font-size: 0.95rem;
+}
+
+.reports-list {
+    background: var(--bg-gray);
+    padding: 2rem;
+    border-radius: var(--radius);
+    margin-top: 1.5rem;
+    margin-bottom: -3rem;
+}
+
+/* about */
+.hero-about {
+    color: var(--text-dark);
+    padding: 0rem 2rem;
+    margin-top: 8rem;
+}
+
+.hero-about h2 {
+    color: var(--primary);
+}   
+
+.reports-list h3 {
+    color: var(--primary);
+    margin-bottom: 1.5rem;
+    font-size: 1.4rem;
+}
+
+.reports-list ul {
+    list-style: none;
+}
+
+.reports-list li {
+    padding: 1rem 1.5rem;
+    margin-bottom: 0.75rem;
+    background: var(--bg-light);
+    border-radius: var(--radius);
+    border-left: 4px solid var(--primary);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.reports-list li:hover {
+    transform: translateX(10px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.reports-list li i {
+    color: var(--primary);
+    font-size: 1.2rem;
+}
+
+/* content section */
+.content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+    padding-top: 0px;
+
+}
