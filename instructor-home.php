@@ -1,16 +1,15 @@
 <?php
 session_start();
-include 'php/db_connect.php';
 
-// Safety check
+include 'php/db_connect.php'; 
 if (!isset($_SESSION['instructor_name'])) {
     header("Location: instructor-login.php");
     exit();
 }
 
 $inst = $_SESSION['instructor_name'];
+$current_instructor = $inst; 
 
-// FETCH SUBJECTS: Make sure the table name matches what you created in phpMyAdmin
 $sql = "SELECT * FROM subjects WHERE instructor_id = '$inst'";
 $result = $conn->query($sql);
 ?>
