@@ -137,7 +137,10 @@ $result = $conn->query($sql);
             <div id="feedbackIcon" class="feedback-icon"></div>
             <h2 id="modalTitle" style="margin-bottom: 10px; color: #1e293b;"></h2>
             <p id="modalMsg" style="color: #64748b;"></p>
-            <button class="feedback-btn" onclick="closeFeedback()">Acknowledge</button>
+
+            <div id="universalModalFooter">
+                <button class="feedback-btn" onclick="closeFeedback()">Acknowledge</button>
+            </div>
         </div>
     </div>
 

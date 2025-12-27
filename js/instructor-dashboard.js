@@ -29,10 +29,9 @@ function showFeedback(type, title, message) {
 
 function closeFeedback() {
     document.getElementById('universalModal').style.display = 'none';
-    
-    // Reset the footer to its default "Acknowledge" button state
-    const footer = document.getElementById('modalFooter') || document.querySelector('.feedback-btn').parentElement;
-    footer.innerHTML = `<button class="feedback-btn" onclick="closeFeedback()">Acknowledge</button>`;
+    // Reset the specific footer
+    document.getElementById('universalModalFooter').innerHTML = 
+        `<button class="feedback-btn" onclick="closeFeedback()">Acknowledge</button>`;
 }
 
 document
@@ -121,19 +120,18 @@ if (sectionForm) {
   });
 }
 
+// instructor-dashboard.js
 function confirmDelete(id, code) {
     const modal = document.getElementById('universalModal');
     const card = document.getElementById('feedbackCard');
     
-    // 1. Set the visual style and text
     card.className = 'feedback-card error';
     document.getElementById('feedbackIcon').innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
     document.getElementById('modalTitle').innerText = 'Confirm Deletion';
     document.getElementById('modalMsg').innerText = `Are you sure you want to delete ${code}? This will also remove all sections associated with it.`;
 
-    // 2. Clear and inject the dual-button layout
-    const footer = document.querySelector('.feedback-btn').parentElement;
-    footer.id = "modalFooter"; // Giving it an ID for easy resetting later
+    // FIX: Target the specific footer ID instead of a generic class
+    const footer = document.getElementById('universalModalFooter');
     footer.innerHTML = `
         <div style="display: flex; gap: 10px; margin-top: 20px;">
             <button class="feedback-btn" style="background: #64748b; margin-top:0;" onclick="closeFeedback()">Cancel</button>
