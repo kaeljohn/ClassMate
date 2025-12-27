@@ -43,19 +43,19 @@
 
     <section class="login">
         <div class="login-box">
-                <h2>Register</h2>
-                <form action="php/register_handler.php" method="POST">
-                    <div class="input-group" style="margin-top: 2rem;">
-                        <i class="fa-solid fa-user"></i>
-                        <input type="text" name="instructor_id" placeholder="Instructor ID" required>
-                    </div>
-                    <div class="input-group">
-                        <i class="fa-solid fa-lock"></i>
-                        <input type="password" name="password" placeholder="Password" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Create Account</button>
-                </form>
-            </div>
+            <h2>Register</h2>
+            <form action="register_action.php" method="POST">
+                <div class="input-group">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="text" name="instructor_id" placeholder="Create Instructor ID" required>
+                </div>
+                <div class="input-group">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" name="password" placeholder="Create Password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Register</button>
+            </form>
+        </div>
     </section>
 </body>
 
