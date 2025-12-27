@@ -1,5 +1,5 @@
 <?php
-include 'php/db_connect.php';
+include 'db_connect.php';
 
 $conn->query("TRUNCATE TABLE students");
 
