@@ -26,7 +26,7 @@ while ($generated_count < 60) {
         
         // Randomly decide if they have a Middle Initial (80% chance)
         $has_mi = (rand(1, 10) > 2);
-        $mi_db = $has_mi ? chr(rand(65, 90)) . "." : null;
+        $mi_db = $has_mi ? chr(rand(65, 90)) . "." : " ";
 
         // Sequential Student Number
         $student_num = "2024-" . str_pad($generated_count + 1, 5, '0', STR_PAD_LEFT);
