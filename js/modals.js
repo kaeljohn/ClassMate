@@ -21,3 +21,12 @@ window.onclick = function(event) {
         modal.style.display = "none";
     }
 }
+
+// Check for URL parameters to show alerts
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.has('success')) {
+    alert("Subject added successfully!");
+}
+if (urlParams.has('deleted')) {
+    alert("Subject deleted successfully!");
+}

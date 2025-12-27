@@ -119,8 +119,15 @@ $result = $conn->query($sql);
                                                 <td>0</td>
 
                                                 <td>
-                                                    <button class="btn btn-sm btn-info">View Students</button>
-                                                    <button class="btn btn-sm btn-danger">Delete</button>
+                                                    <a href="view-section.php?id=<?php echo $row['subject_id']; ?>"
+                                                        class="btn btn-sm btn-info">
+                                                        View Students
+                                                    </a>
+                                                    <a href="php/delete_subject.php?id=<?php echo $row['subject_id']; ?>"
+                                                        class="btn btn-sm btn-danger"
+                                                        onclick="return confirm('Are you sure you want to delete this subject?')">
+                                                        Delete
+                                                    </a>
                                                 </td>
                                             </tr>
                                         <?php endwhile; ?>
@@ -152,7 +159,8 @@ $result = $conn->query($sql);
                             </div>
                             <div class="form-group">
                                 <label>Subject Name</label>
-                                <input type="text" name="subjectName" placeholder="e.g., Information Management" required>
+                                <input type="text" name="subjectName" placeholder="e.g., Information Management"
+                                    required>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary"
