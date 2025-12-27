@@ -94,7 +94,7 @@ function toggleAll(source) {
 }
 
 // Function to open modal and set the section ID
-function openEnrollment(sectionId) {
+function openEnrollmentModal(sectionId) {
     document.getElementById('active_section_id').value = sectionId;
     document.getElementById('enrollmentModal').style.display = 'block';
 }

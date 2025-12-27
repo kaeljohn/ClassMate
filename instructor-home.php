@@ -77,8 +77,8 @@ $result = $conn->query($sql);
                             Evaluation</a></li>
                     <li><a href="#" class="nav-btn" data-target="analytics"><i class="fa-solid fa-chart-line"></i>
                             Analytics</a></li>
-
                 </ul>
+
                 <div class="nav-btn" onclick="openEnrollmentModal()">
                     <i class="fa-solid fa-plus-circle"></i> Enroll a Student
                 </div>
