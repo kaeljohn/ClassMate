@@ -109,8 +109,7 @@ $result = $conn->query($sql);
                             Analytics</a></li>
                 </ul>
                 <div class="sidebar-bottom">
-                    <a href="#" class="nav-btn" data-target="enrollment"><i class="fa-solid fa-circle-plus"></i> Enroll
-                        a Student</a>
+                    <a href="#" class="nav-btn" data-target="enrollment"><i class="fa-solid fa-circle-plus"></i> Manage Students</a>
                 </div>
             </nav>
 
@@ -295,7 +294,7 @@ $result = $conn->query($sql);
                 <div id="addStudentModal" class="modal">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h2><i class="fa-solid fa-user-plus"></i> Quick Register</h2>
+                            <h2><i class="fa-solid fa-user-plus"></i> Register a Student</h2>
                             <button class="close-btn" onclick="closeAddStudentModal()">&times;</button>
                         </div>
 
@@ -314,7 +313,7 @@ $result = $conn->query($sql);
                                     <label>First Name *</label>
                                     <input type="text" name="first_name" placeholder="Juan" required>
                                 </div>
-                                <div class="form-group" style="flex: 0.3;">
+                                <div class="form-group">
                                     <label>M.I.</label>
                                     <input type="text" name="middle_name" maxlength="1" placeholder="A">
                                 </div>
