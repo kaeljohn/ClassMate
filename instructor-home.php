@@ -310,7 +310,7 @@ $result = $conn->query($sql);
                                 </div>
                                 <div class="form-group">
                                     <label>M.I.</label>
-                                    <input type="text" name="middle_name" maxlength="2" placeholder="A.">
+                                    <input type="text" name="middle_name" maxlength="1" placeholder="A">
                                 </div>
                             </div>
                             <div class="form-group">
