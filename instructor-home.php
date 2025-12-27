@@ -78,9 +78,10 @@ $result = $conn->query($sql);
                     <li><a href="#" class="nav-btn" data-target="analytics"><i class="fa-solid fa-chart-line"></i>
                             Analytics</a></li>
                 </ul>
-
+                w
                 <div class="sidebar-bottom">
-                    <a href="#" class="nav-btn" data-target="enrollment" onclick="openEnrollmentModal()"><i class="fa-solid fa-circle-plus"></i> Enroll
+                    <a href="#" class="nav-btn" data-target="enrollment" onclick="openEnrollmentModal()"><i
+                            class="fa-solid fa-circle-plus"></i> Enroll
                         a Student</a>
                 </div>
             </nav>
@@ -376,8 +377,87 @@ $result = $conn->query($sql);
 
                 <section id="enrollment" class="content-section" style="display: none;">
                     <div class="dashboard-display">
+                        <div class="table-controls">
+                            <button class="btn btn-primary" onclick="openAddStudentModal()">
+                                <i class="fa-solid fa-plus"></i> Add New Student
+                            </button>
+                            <div class="search-box">
+                                <i class="fa-solid fa-search"></i>
+                                <input type="text" id="enrollmentSearchInput" onkeyup="filterEnrollmentTable()"
+                                    placeholder="Search student name or ID...">
+                            </div>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="subjects-table" id="mainEnrollmentTable">
+                                <thead>
+                                    <tr>
+                                        <th><input type="checkbox" id="selectAllStudents"
+                                                onclick="toggleSelectAll(this)"> Select All</th>
+                                        <th>Student Number</th>
+                                        <th>Full Name</th>
+                                        <th>Email</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php
+                                    $allStudentsQuery = "SELECT * FROM students ORDER BY full_name ASC";
+                                    $allStudentsResult = $conn->query($allStudentsQuery);
+
+                                    if ($allStudentsResult->num_rows > 0):
+                                        while ($student = $allStudentsResult->fetch_assoc()): ?>
+                                            <tr>
+                                                <td><input type="checkbox" class="student-checkbox"
+                                                        value="<?php echo $student['student_id']; ?>"></td>
+                                                <td><?php echo htmlspecialchars($student['student_number']); ?></td>
+                                                <td><?php echo htmlspecialchars($student['full_name']); ?></td>
+                                                <td><?php echo htmlspecialchars($student['email'] ?? 'N/A'); ?></td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-info">Edit</button>
+                                                </td>
+                                            </tr>
+                                        <?php endwhile;
+                                    else: ?>
+                                        <tr class="no-data">
+                                            <td colspan="5" style="text-align: center; padding: 2rem; color: #999;">
+                                                No students found in the database.
+                                            </td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </section>
+
+                <div id="addStudentModal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2><i class="fa-solid fa-user-plus"></i> Register New Student</h2>
+                            <button class="close-btn" onclick="closeAddStudentModal()">&times;</button>
+                        </div>
+                        <form action="php/add_new_student.php" method="POST">
+                            <div class="form-group">
+                                <label>Full Name</label>
+                                <input type="text" name="full_name" placeholder="Last Name, First Name M.I." required>
+                            </div>
+                            <div class="form-group">
+                                <label>Student Number</label>
+                                <input type="text" name="student_number" placeholder="e.g., 2023-10001" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email Address</label>
+                                <input type="email" name="email" placeholder="student@email.com" required>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary"
+                                    onclick="closeAddStudentModal()">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Save Student</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
 
                 <div id="enrollmentModal" class="modal">
                     <div class="modal-content">
