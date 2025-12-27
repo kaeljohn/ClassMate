@@ -301,15 +301,15 @@ $result = $conn->query($sql);
                         <form action="php/add_new_student.php" method="POST">
                             <div class="name-row">
                                 <div class="form-group">
-                                    <label>Last Name</label>
+                                    <label>Last Name *</label>
                                     <input type="text" name="last_name" placeholder="Dela Cruz" required>
                                 </div>
                                 <div class="form-group">
-                                    <label>First Name</label>
+                                    <label>First Name *</label>
                                     <input type="text" name="first_name" placeholder="Juan" required>
                                 </div>
                                 <div class="form-group" style="flex: 0.3;">
-                                    <label>M.I. (Optional)</label>
+                                    <label>M.I.</label>
                                     <input type="text" name="middle_name" maxlength="1" placeholder="A">
                                 </div>
                             </div>
