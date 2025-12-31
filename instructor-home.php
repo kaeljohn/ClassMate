@@ -1,6 +1,6 @@
 <?php
 session_start();
-include 'php/db_connect.php';
+include 'php/database/db_connect.php';
 
 // Authentication Check
 if (!isset($_SESSION['instructor_name'])) {
@@ -172,9 +172,6 @@ $result = $conn->query($sql);
         </svg>
     </div>
 
-
-
-
     <section class="main-dashboard">
         <div class="dashboard-box">
             <nav class="sidebar">
@@ -332,7 +329,7 @@ $result = $conn->query($sql);
                             <h2>Add New Subject</h2>
                             <button class="close-btn" onclick="closeAddSubjectModal()">&times;</button>
                         </div>
-                        <form action="php/add_subject.php" method="POST">
+                        <form action="php/instructor_home/courses/add_subject.php" method="POST">
                             <div class="form-group"><label>Subject Code</label><input type="text" name="subjectCode"
                                     required></div>
                             <div class="form-group"><label>Subject Name</label><input type="text" name="subjectName"
@@ -349,19 +346,31 @@ $result = $conn->query($sql);
                             <h2>Create New Section</h2>
                             <button class="close-btn" onclick="closeAddSectionModal()">&times;</button>
                         </div>
-                        <form action="php/add_section.php" method="POST">
+                        <form action="php/instructor_home/sections/add_section.php" method="POST">
                             <div class="form-group">
                                 <label>Select Subject</label>
                                 <select name="subject_id" required>
-                                    <?php $sub_drop = $conn->query("SELECT * FROM subjects WHERE instructor_id = '$current_instructor'");
-                                    while ($s = $sub_drop->fetch_assoc())
-                                        echo "<option value='{$s['subject_id']}'>{$s['subject_code']}</option>"; ?>
+                                    <option value="" disabled selected>-- Choose a Subject --</option>
+                                    <?php
+                                    $sub_drop = $conn->query("SELECT * FROM subjects WHERE instructor_id = '$current_instructor'");
+                                    while ($s = $sub_drop->fetch_assoc()):
+                                        // Combine code and name for the display label
+                                        $display_text = htmlspecialchars($s['subject_code'] . " - " . $s['subject_name']);
+                                        ?>
+                                        <option value="<?php echo $s['subject_id']; ?>">
+                                            <?php echo strtoupper($display_text); ?>
+                                        </option>
+                                    <?php endwhile; ?>
                                 </select>
                             </div>
-                            <div class="form-group"><label>Section Name</label><input type="text" name="section_name"
-                                    required></div>
-                            <div class="form-group"><label>School Year</label><input type="text" name="school_year"
-                                    required></div>
+                            <div class="form-group">
+                                <label>Section Name</label>
+                                <input type="text" name="section_name" placeholder="e.g. IT1A" required>
+                            </div>
+                            <div class="form-group">
+                                <label>School Year</label>
+                                <input type="text" name="school_year" placeholder="2023-2024" required>
+                            </div>
                             <div class="form-group">
                                 <label>Semester</label>
                                 <select name="semester">
@@ -369,8 +378,9 @@ $result = $conn->query($sql);
                                     <option>2nd Semester</option>
                                 </select>
                             </div>
-                            <div class="modal-footer"><button type="submit" class="btn btn-primary">Create
-                                    Section</button></div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary">Create Section</button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -387,7 +397,7 @@ $result = $conn->query($sql);
                             <i class="fa-solid fa-circle-exclamation"></i> <span id="errorText"></span>
                         </div>
 
-                        <form id="quickRegisterForm" action="php/add_new_student.php" method="POST">
+                        <form id="quickRegisterForm" action="php/instructor_home/students/add_new_student.php" method="POST">
                             <div class="name-row">
                                 <div class="form-group">
                                     <label>Last Name *</label>
