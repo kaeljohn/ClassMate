@@ -65,6 +65,16 @@ $result = $conn->query($sql);
             flex: 0.5;
         }
 
+        /* Modal Select Styling */
+        .modal select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            background-color: #f8fafc;
+            font-family: 'Quicksand', sans-serif;
+        }
+
         /* Modern Feedback Backdrop */
         .modal-overlay {
             position: fixed;
@@ -132,6 +142,7 @@ $result = $conn->query($sql);
 </head>
 
 <body>
+    <!-- Universal Feedback Modal -->
     <div id="universalModal" class="modal-overlay" style="display: none;">
         <div id="feedbackCard" class="feedback-card">
             <div id="feedbackIcon" class="feedback-icon"></div>
@@ -139,7 +150,7 @@ $result = $conn->query($sql);
             <p id="modalMsg" style="color: #64748b;"></p>
 
             <div id="universalModalFooter">
-                <button class="feedback-btn" onclick="closeFeedback()">Acknowledge</button>
+                <button class="feedback-btn" onclick="handleAcknowledge()">Acknowledge</button>
             </div>
         </div>
     </div>
@@ -172,15 +183,12 @@ $result = $conn->query($sql);
         </svg>
     </div>
 
-
-
-
     <section class="main-dashboard">
         <div class="dashboard-box">
             <nav class="sidebar">
                 <ul class="nav-links">
-                    <li><a href="#" class="nav-btn active" data-target="courses"><i class="fa-solid fa-book-open"></i>
-                            Courses</a></li>
+                    <li><a href="#" class="nav-btn" data-target="subjects"><i class="fa-solid fa-book-open"></i>
+                            Subjects</a></li>
                     <li><a href="#" class="nav-btn" data-target="students"><i class="fa-solid fa-user-graduate"></i>
                             Sections</a></li>
                     <li><a href="#" class="nav-btn" data-target="attendance"><i class="fa-solid fa-calendar-check"></i>
@@ -197,7 +205,7 @@ $result = $conn->query($sql);
             </nav>
 
             <main class="content-area">
-                <section id="courses" class="content-section">
+                <section id="subjects" class="content-section">
                     <div class="dashboard-display">
                         <div class="table-controls">
                             <button class="btn btn-primary" onclick="openAddSubjectModal()"><i
@@ -353,15 +361,20 @@ $result = $conn->query($sql);
                             <div class="form-group">
                                 <label>Select Subject</label>
                                 <select name="subject_id" required>
-                                    <?php $sub_drop = $conn->query("SELECT * FROM subjects WHERE instructor_id = '$current_instructor'");
-                                    while ($s = $sub_drop->fetch_assoc())
-                                        echo "<option value='{$s['subject_id']}'>{$s['subject_code']}</option>"; ?>
+                                    <option value="" disabled selected>-- Select a Subject --</option>
+                                    <?php 
+                                    $sub_drop = $conn->query("SELECT * FROM subjects WHERE instructor_id = '$current_instructor' ORDER BY subject_code ASC");
+                                    while ($s = $sub_drop->fetch_assoc()):
+                                        $display_name = htmlspecialchars($s['subject_code']) . " - " . htmlspecialchars($s['subject_name']);
+                                        echo "<option value='{$s['subject_id']}'>{$display_name}</option>";
+                                    endwhile; 
+                                    ?>
                                 </select>
                             </div>
                             <div class="form-group"><label>Section Name</label><input type="text" name="section_name"
-                                    required></div>
+                                    placeholder="e.g. BSIT 3-1" required></div>
                             <div class="form-group"><label>School Year</label><input type="text" name="school_year"
-                                    required></div>
+                                    placeholder="e.g. 2023-2024" required></div>
                             <div class="form-group">
                                 <label>Semester</label>
                                 <select name="semester">
@@ -421,6 +434,85 @@ $result = $conn->query($sql);
             </main>
         </div>
     </section>
+
+    <!-- UI State Manager Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navButtons = document.querySelectorAll('.nav-btn');
+            const sections = document.querySelectorAll('.content-section');
+
+            // 1. Function to switch tabs
+            function switchTab(targetId) {
+                sections.forEach(sec => sec.style.display = 'none');
+                navButtons.forEach(btn => btn.classList.remove('active'));
+
+                const targetSection = document.getElementById(targetId);
+                const targetBtn = document.querySelector(`.nav-btn[data-target="${targetId}"]`);
+
+                if (targetSection && targetBtn) {
+                    targetSection.style.display = 'block';
+                    targetBtn.classList.add('active');
+                    // Save to local storage so it persists through refresh
+                    localStorage.setItem('activeDashboardTab', targetId);
+                }
+            }
+
+            // 2. Attach click listeners to sidebar buttons
+            navButtons.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = this.getAttribute('data-target');
+                    if (target) switchTab(target);
+                });
+            });
+
+            // 3. Restore last active tab or default to 'subjects'
+            const lastTab = localStorage.getItem('activeDashboardTab') || 'subjects';
+            switchTab(lastTab);
+        });
+
+        /**
+         * 4. Modal Acknowledge Logic
+         * This function is the ONLY way the page refreshes after a success action.
+         * It clears any accidental background timeouts and reloads the current state.
+         */
+        function handleAcknowledge() {
+            // Close the modal visually
+            document.getElementById('universalModal').style.display = 'none';
+            
+            // Perform reload. The DOMContentLoaded logic will restore the correct tab.
+            window.location.reload();
+        }
+
+        /**
+         * 5. Enhanced confirmDelete logic
+         * Overrides the default behavior to ensure deletion feedback also requires acknowledgment.
+         */
+        function confirmDelete(subjectId, subjectCode) {
+            if (confirm(`Are you sure you want to delete subject ${subjectCode}?`)) {
+                // We use fetch to perform deletion so we can control the UI flow
+                fetch(`php/delete_subject.php?id=${subjectId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Instead of auto-refreshing, we show the universal modal
+                        const modal = document.getElementById('universalModal');
+                        const card = document.getElementById('feedbackCard');
+                        const title = document.getElementById('modalTitle');
+                        const msg = document.getElementById('modalMsg');
+                        const icon = document.getElementById('feedbackIcon');
+
+                        modal.style.display = 'flex';
+                        card.className = 'feedback-card ' + (data.success ? 'success' : 'error');
+                        icon.innerHTML = data.success ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-circle-xmark"></i>';
+                        title.innerText = data.success ? 'Success!' : 'Error';
+                        msg.innerText = data.message;
+                    })
+                    .catch(err => {
+                        console.error('Delete failed:', err);
+                    });
+            }
+        }
+    </script>
 
     <script src="js/instructor-dashboard.js"></script>
 </body>
