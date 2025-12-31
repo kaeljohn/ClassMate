@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
 session_start();
-include 'db_connect.php';
+include '../../database/db_connect.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $code = trim($_POST['subjectCode']);

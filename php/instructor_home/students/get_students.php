@@ -1,5 +1,5 @@
 <?php
-include 'db_connect.php';
+include '../../database/db_connect.php';
 
 if (isset($_GET['subject_id'])) {
     $subject_id = intval($_GET['subject_id']);

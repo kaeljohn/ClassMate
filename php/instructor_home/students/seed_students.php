@@ -1,5 +1,5 @@
 <?php
-include 'db_connect.php';
+include '../../database/db_connect.php';
 
 // 1. Clear existing data to start fresh
 $conn->query("TRUNCATE TABLE students");
