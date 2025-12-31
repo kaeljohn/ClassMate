@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
 session_start();
-include '../../database/db_connect.php';
+include 'db_connect.php';
 
 if (isset($_GET['id'])) {
     $id = $_GET['id'];

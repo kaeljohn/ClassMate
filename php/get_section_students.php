@@ -1,5 +1,5 @@
 <?php
-include '../../database/db_connect.php';
+include 'db_connect.php';
 $section_id = $_GET['section_id'];
 
 $sql = "SELECT s.*, sa.assignment_id 

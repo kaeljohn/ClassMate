@@ -1,6 +1,6 @@
 <?php
 session_start();
-include '../../database/db_connect.php';
+include 'db_connect.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $section_id = $_POST['section_id'];
@@ -14,6 +14,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $conn->query($sql);
     }
     
-    header("Location: ../../../instructor-home.php?status=student_enrolled");
+    header("Location: ../instructor-home.php?status=student_enrolled");
 }
 ?>

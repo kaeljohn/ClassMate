@@ -1,6 +1,6 @@
 <?php
 session_start();
-include '../../database/db_connect.php';
+include 'db_connect.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['student_ids'])) {
     $section_id = $_POST['section_id'];
@@ -13,8 +13,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['student_ids'])) {
         $conn->query($sql);
     }
 
-    header("Location: ../../../instructor-home.php?status=enrolled");
+    header("Location: ../instructor-home.php?status=enrolled");
 } else {
-    header("Location: ../../../instructor-home.php?error=no_students_selected");
+    header("Location: ../instructor-home.php?error=no_students_selected");
 }
 ?>
