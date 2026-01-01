@@ -1,20 +1,47 @@
 <?php
-header('Content-Type: application/json');
+session_start();
 include 'db_connect.php';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $sub_id = $_POST['subject_id'];
-    $sec_name = trim($_POST['section_name']);
-    $sy = trim($_POST['school_year']);
-    $sem = $_POST['semester'];
+header('Content-Type: application/json');
 
-    $stmt = $conn->prepare("INSERT INTO sections (subject_id, section_name, school_year, semester) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("isss", $sub_id, $sec_name, $sy, $sem);
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $instructor = $_SESSION['instructor_name'];
+    $sectionName = $_POST['sectionName'];
+    $syStart = $_POST['syStart'];
+    $syEnd = $_POST['syEnd'];
+    $semester = $_POST['semester'];
+
+    // 1. Validation: Ensure Section Name is unique for this instructor
+    $checkSql = "SELECT section_id FROM sections WHERE instructor_id = ? AND section_name = ?";
+    $checkStmt = $conn->prepare($checkSql);
+    $checkStmt->bind_param("ss", $instructor, $sectionName);
+    $checkStmt->execute();
+    $checkResult = $checkStmt->get_result();
+
+    if ($checkResult->num_rows > 0) {
+        echo json_encode([
+            'status' => 'error', 
+            'message' => "Error: Section '$sectionName' already exists in your list."
+        ]);
+        $checkStmt->close();
+        exit();
+    }
+    $checkStmt->close();
+
+    // 2. Insert the new section
+    $sql = "INSERT INTO sections (instructor_id, section_name, sy_start, sy_end, semester) 
+            VALUES (?, ?, ?, ?, ?)";
+    
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("sssss", $instructor, $sectionName, $syStart, $syEnd, $semester);
 
     if ($stmt->execute()) {
-        echo json_encode(['status' => 'success', 'message' => 'Section created successfully!']);
+        echo json_encode(['status' => 'success', 'message'=> 'Section Created Successfully']);
     } else {
-        echo json_encode(['status' => 'error', 'message' => $conn->error]);
+        echo json_encode(['status' => 'error', 'message' => 'Database error: ' . $conn->error]);
     }
+    
+    $stmt->close();
+    $conn->close();
 }
 ?>

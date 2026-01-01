@@ -1,18 +1,23 @@
 <?php
+session_start();
 include 'db_connect.php';
 
-if (isset($_GET['subject_id'])) {
-    $subject_id = intval($_GET['subject_id']);
-    
-    $query = "SELECT student_number, full_name, email FROM students WHERE enrolled_subject_id = $subject_id";
-    $result = $conn->query($query);
+header('Content-Type: application/json');
+
+if (isset($_GET['section_id'])) {
+    $sectionId = (int)$_GET['section_id'];
+    $sql = "SELECT * FROM students WHERE section_id = ? ORDER BY last_name ASC";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $sectionId);
+    $stmt->execute();
+    $result = $stmt->get_result();
     
     $students = [];
     while ($row = $result->fetch_assoc()) {
         $students[] = $row;
     }
-    
-    header('Content-Type: application/json');
-    echo json_encode($students);
+    echo json_encode(['status' => 'success', 'data' => $students]);
+    $stmt->close();
 }
+$conn->close();
 ?>
