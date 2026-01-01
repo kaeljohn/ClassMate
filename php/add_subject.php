@@ -1,20 +1,28 @@
 <?php
-header('Content-Type: application/json');
 session_start();
 include 'db_connect.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $code = trim($_POST['subjectCode']);
-    $name = trim($_POST['subjectName']);
-    $inst = $_SESSION['instructor_name'];
+    $instructor = $_SESSION['instructor_name'];
+    $schedCode = $_POST['schedCode'];
+    $subjectCode = $_POST['subjectCode'];
+    $subjectName = $_POST['subjectName'];
+    $startTime = $_POST['startTime'];
+    $endTime = $_POST['endTime'];
+    $schedDay = $_POST['schedDay'];
 
-    $stmt = $conn->prepare("INSERT INTO subjects (subject_code, subject_name, instructor_id) VALUES (?, ?, ?)");
-    $stmt->bind_param("sss", $code, $name, $inst);
+    $sql = "INSERT INTO subjects (instructor_id, sched_code, subject_code, subject_name, start_time, end_time, sched_day) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)";
+    
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("sssssss", $instructor, $schedCode, $subjectCode, $subjectName, $startTime, $endTime, $schedDay);
 
     if ($stmt->execute()) {
-        echo json_encode(['status' => 'success', 'message' => 'Subject added successfully!']);
+        echo "<script>alert('Subject added successfully!'); window.location.href='../instructor-home.php';</script>";
     } else {
-        echo json_encode(['status' => 'error', 'message' => $conn->error]);
+        echo "<script>alert('Error: " . $stmt->error . "'); window.history.back();</script>";
     }
+    $stmt->close();
+    $conn->close();
 }
 ?>
