@@ -1,6 +1,6 @@
 Hi, hello hello yes. Eto tutorial para mag automatically generate ng data sa ClassMate (para hindi ka mahirapan kakaisa-isa diba)
 
-Step Zero: run [ClassMate/php/setup_db.php]
+Step Zero: IMPORTANT!!! run [ClassMate/php/setup_db.php]
 First step: IMPORTANT!!! Dapat may registered instructor account kana and naka log-in kana sa dashboard!
 Second step: run [ClassMate/php/seed_subjects.php]
 Third step: create a section in the webpage!
