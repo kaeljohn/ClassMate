@@ -13,6 +13,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $endTime = $_POST['endTime'];
     $schedDay = $_POST['schedDay'];
 
+    // --- TIME VALIDATION ---
+    $startTs = strtotime($startTime);
+    $endTs = strtotime($endTime);
+
+    // Check if End Time is before or equal to Start Time
+    if ($endTs <= $startTs) {
+        echo json_encode([
+            'status' => 'error', 
+            'message' => 'End time must be after start time.'
+        ]);
+        exit();
+    }
+
+    // Check if duration exceeds 2 hours (7200 seconds)
+    $duration = $endTs - $startTs;
+    if ($duration > 7200) {
+        echo json_encode([
+            'status' => 'error', 
+            'message' => 'Subject duration cannot exceed 2 hours.'
+        ]);
+        exit();
+    }
+    // -----------------------
+
     $checkSql = "SELECT subject_id FROM subjects WHERE instructor_id = ? AND subject_code = ?";
     $checkStmt = $conn->prepare($checkSql);
     $checkStmt->bind_param("ss", $instructor, $subjectCode);

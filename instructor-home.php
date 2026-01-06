@@ -127,6 +127,29 @@ while ($row = $res_sections->fetch_assoc()) {
             display: block;
             font-weight: 400;
         }
+        
+        /* DISABLED QUIZ STYLING */
+        input.grade-input:disabled {
+            background-color: #f1f5f9;
+            color: #cbd5e1;
+            cursor: not-allowed;
+            border-color: #e2e8f0;
+        }
+        
+        th.disabled-col {
+            background-color: #f8fafc;
+            color: #94a3b8;
+            position: relative;
+        }
+        
+        th.disabled-col::after {
+            content: '(Disabled)';
+            display: block;
+            font-size: 0.6rem;
+            color: #ef4444;
+            font-weight: 700;
+            margin-top: 2px;
+        }
     </style>
 </head>
 
@@ -290,10 +313,11 @@ while ($row = $res_sections->fetch_assoc()) {
             <form onsubmit="saveMaxScoreFromModal(event)">
                 <div style="padding: 20px;">
                     <p id="maxScoreModalLabel" style="margin-bottom: 10px; font-weight: 500;"></p>
-                    <input type="number" id="maxScoreInput" name="maxScore" min="1" required
+                    <input type="number" id="maxScoreInput" name="maxScore" min="0" required
                         style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 1.1rem;">
-                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;">Note: Grades higher than
-                        this value will be capped.</p>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;">
+                        Note: Set to 0 to disable this assessment.
+                    </p>
                 </div>
                 <div
                     style="padding: 15px 20px; text-align: right; background: #f8fafc; border-top: 1px solid #eee; border-radius: 0 0 12px 12px;">
@@ -455,7 +479,8 @@ while ($row = $res_sections->fetch_assoc()) {
                                             </td>
                                             <td>
                                                 <?php
-                                                // UPDATE 1: Display Start AND End Time
+                                                // UPDATE: Display Start AND End Time in Military Format (H:i)
+                                                // Example: 14:30 - 15:30
                                                 $startTime = date("h:i A", strtotime($s['start_time']));
                                                 $endTime = date("h:i A", strtotime($s['end_time']));
                                                 echo $s['sched_day'] . " <small class='text-muted'>$startTime - $endTime</small>";
@@ -1043,5 +1068,4 @@ while ($row = $res_sections->fetch_assoc()) {
 
     <script src="js/instructor-home.js"></script>
 </body>
-
 </html>

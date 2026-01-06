@@ -14,13 +14,13 @@ $subject_id = $_POST['subject_id'] ?? null;
 $assessment_type = $_POST['assessment_type'] ?? null;
 $max_score = $_POST['max_score'] ?? null;
 
-if ($section_id && $assessment_type && $max_score) {
+// Removed max_score !== '' and 0 checks. Now requires a positive value.
+if ($section_id && $assessment_type && intval($max_score) > 0) {
     $stmt = $conn->prepare("INSERT INTO assessment_settings (section_id, subject_id, instructor_id, assessment_type, max_score) 
                             VALUES (?, ?, ?, ?, ?) 
-                            ON DUPLICATE KEY UPDATE max_score = VALUES(max_score), instructor_id = VALUES(instructor_id)");
+                            ON DUPLICATE KEY UPDATE max_score = VALUES(max_score)");
     
     $sub_id_val = $subject_id ? $subject_id : 0;
-    
     $stmt->bind_param("iiisi", $section_id, $sub_id_val, $instructor_id, $assessment_type, $max_score);
     
     if ($stmt->execute()) {
@@ -29,7 +29,5 @@ if ($section_id && $assessment_type && $max_score) {
         echo json_encode(['status' => 'error', 'message' => $conn->error]);
     }
 } else {
-    echo json_encode(['status' => 'error', 'message' => 'Invalid data']);
+    echo json_encode(['status' => 'error', 'message' => 'Max score must be greater than 0']);
 }
-$conn->close();
-?>

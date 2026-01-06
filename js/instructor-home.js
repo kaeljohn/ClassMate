@@ -42,7 +42,6 @@ function confirmLogout() {
     window.location.href = 'php/logout.php';
 }
 
-// --- ATTENDANCE ---
 function prepareAttendanceSheet(sec) {
     currentSection = sec;
     isAttendanceMode = true;
@@ -86,7 +85,6 @@ function openAttendanceSheet(sec, sub) {
     headerRow.innerHTML = '<th class="fixed-col">Student Name</th>';
     for (let w = 1; w <= 18; w++) headerRow.innerHTML += `<th onclick="showMassPicker(this, ${w})" style="cursor:pointer">W${w}</th>`;
 
-    // UPDATED: Fetch Enrolled Students ONLY
     fetch(`php/attendance/get_enrolled_students.php?section_id=${sec.section_id}&subject_id=${sub.subject_id}`)
         .then(r => r.json())
         .then(res => {
@@ -232,8 +230,12 @@ function renderGradeSheet(sec, sub) {
     const header = document.getElementById('gradeTableHeader');
     let html = '<th class="fixed-col">Student Name</th>';
     
+    // Helper to generate headers
     const genHead = (lbl, type) => {
-        const max = currentMaxScores[type] || 100;
+        // Default to 100 if undefined, but respect 0 if explicitly set
+        let max = currentMaxScores[type];
+        if (max === undefined) max = 100;
+
         return `<th style="cursor:pointer; min-width:80px;" onclick="promptMaxScore('${type}')">
                     ${lbl}
                     <span class="max-score-display" id="header-max-${type}">/ ${max}</span>
@@ -245,19 +247,34 @@ function renderGradeSheet(sec, sub) {
     html += genHead('Finals', 'Finals');
     header.innerHTML = html;
 
-    // UPDATED: Fetch only enrolled students
+    // Fetch Enrolled Students
     fetch(`php/attendance/get_enrolled_students.php?section_id=${sec.section_id}&subject_id=${sub.subject_id}`).then(r => r.json()).then(res => {
         const tbody = document.getElementById('gradeTableBody');
         tbody.innerHTML = '';
         if(res.status === 'success' && res.data.length > 0) {
             res.data.sort((a, b) => a.last_name.localeCompare(b.last_name)).forEach(s => {
                 let html = `<tr><td class="fixed-col"><strong>${s.last_name}, ${s.first_name}</strong></td>`;
-                for (let i = 1; i <= 10; i++) html += `<td><input class="grade-input" type="number" id="g-${s.student_id}-Quiz${i}" onchange="saveGrade(${s.student_id}, 'Quiz${i}', this)"></td>`;
-                html += `<td><input class="grade-input" type="number" id="g-${s.student_id}-Midterm" onchange="saveGrade(${s.student_id}, 'Midterm', this)"></td>`;
-                html += `<td><input class="grade-input" type="number" id="g-${s.student_id}-Finals" onchange="saveGrade(${s.student_id}, 'Finals', this)"></td></tr>`;
+                
+                // Helper to generate cells
+                const genCell = (type) => {
+                    let max = currentMaxScores[type];
+                    if (max === undefined) max = 100;
+                    
+                    // DISABLE INPUT IF MAX IS 0
+                    const isDisabled = (max === 0) ? 'disabled style="background:#f1f5f9; cursor:not-allowed;"' : '';
+                    
+                    return `<td><input class="grade-input" type="number" id="g-${s.student_id}-${type}" onchange="saveGrade(${s.student_id}, '${type}', this)" ${isDisabled}></td>`;
+                };
+
+                for (let i = 1; i <= 10; i++) html += genCell(`Quiz${i}`);
+                html += genCell('Midterm');
+                html += genCell('Finals');
+                html += `</tr>`;
+                
                 tbody.innerHTML += html;
             });
 
+            // Fill existing grades
             fetch(`php/quizandexams/get_grades.php?section_id=${sec.section_id}&subject_id=${sub.subject_id}`).then(r => r.json()).then(d => {
                 if (d.status === 'success') d.data.forEach(g => {
                     const field = document.getElementById(`g-${g.student_id}-${g.assessment_type}`);
@@ -272,10 +289,12 @@ function renderGradeSheet(sec, sub) {
 
 function promptMaxScore(type) {
     currentMaxScoreType = type;
-    const currentMax = currentMaxScores[type] || 100;
+    const currentMax = currentMaxScores[type] !== undefined ? currentMaxScores[type] : 100;
     
     document.getElementById('maxScoreModalLabel').innerText = `Enter Max Score for ${type}`;
+    // Allow 0 to disable
     document.getElementById('maxScoreInput').value = currentMax;
+    document.getElementById('maxScoreInput').min = 0; // Ensure input allows 0
     toggleModal('maxScoreModal', true);
 }
 
@@ -284,7 +303,8 @@ function saveMaxScoreFromModal(e) {
     const newMax = document.getElementById('maxScoreInput').value;
     const type = currentMaxScoreType;
     
-    if (!newMax || newMax < 1) return;
+    // Allow 0, but reject empty or negative
+    if (newMax === '' || parseInt(newMax) < 0) return;
     
     const val = parseInt(newMax);
 
@@ -301,6 +321,9 @@ function saveMaxScoreFromModal(e) {
                 currentMaxScores[type] = val;
                 document.getElementById(`header-max-${type}`).innerText = `/ ${val}`;
                 toggleModal('maxScoreModal', false);
+                
+                // Re-render to disable/enable inputs immediately
+                renderGradeSheet(currentSection, currentSubject);
             } else {
                 showFeedback('error', 'Save Failed', "Failed to save max score.");
             }
@@ -503,7 +526,6 @@ function loadAnalyticsData(sec) {
     if (!currentAnalyticsType) return;
     currentSection = sec;
 
-    // UPDATE: For attendance/late types, we MUST pick a subject first
     const typesRequiringSubject = ['low_attendance', 'attendance_chart', 'late_absent'];
     
     if (typesRequiringSubject.includes(currentAnalyticsType)) {
@@ -511,7 +533,6 @@ function loadAnalyticsData(sec) {
         isAttendanceMode = false;
         toggleModal('selectSubjectModal', true);
     } else {
-        // Proceed directly for Rankings and Overall Grade
         fetchAndRenderAnalytics(sec, null);
     }
 }
@@ -525,7 +546,6 @@ function fetchAndRenderAnalytics(sec, sub) {
     document.getElementById('analyticsSectionPicker').classList.add('hidden');
     document.getElementById('analyticsResult').classList.remove('hidden');
     
-    // Update title
     let title = sec.section_name;
     if (sub) title += ` - ${sub.subject_code}`;
     document.getElementById('anaResultTitle').innerText = title;
@@ -539,7 +559,6 @@ function fetchAndRenderAnalytics(sec, sub) {
     contentArea.classList.remove('hidden');
     if (analyticsChartInstance) { analyticsChartInstance.destroy(); analyticsChartInstance = null; }
 
-    // Build URL
     let url = `php/analytics/get_analytics.php?section_id=${sec.section_id}&type=${currentAnalyticsType}`;
     if (sub) url += `&subject_id=${sub.subject_id}`;
 
@@ -550,7 +569,6 @@ function fetchAndRenderAnalytics(sec, sub) {
             else table.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:red;">${res.message}</td></tr>`;
         })
         .catch(err => {
-            // FIXED: Added error handling to prevent getting stuck on loading
             table.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:red;">Error loading data. Check console.</td></tr>`;
             console.error(err);
         });
@@ -625,7 +643,7 @@ function renderAnalytics(data, type) {
     }
 }
 
-// --- NEW: Open Student Profile Grade Breakdown (Multi-Subject) ---
+// --- Open Student Profile Grade Breakdown (Multi-Subject) ---
 function openStudentProfileAnalytics(studentId, studentName) {
     toggleModal('studentProfileGradesModal', true);
     document.getElementById('spgmTitle').innerText = studentName;
@@ -634,7 +652,6 @@ function openStudentProfileAnalytics(studentId, studentName) {
     body.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Loading profile...</td></tr>';
     totalEl.innerText = '...';
 
-    // New request to get breakdown
     fetch(`php/analytics/get_analytics.php?section_id=${currentSection.section_id}&type=student_breakdown&student_id=${studentId}`)
         .then(r => r.json())
         .then(res => {
@@ -656,7 +673,6 @@ function openStudentProfileAnalytics(studentId, studentName) {
             }
         })
         .catch(err => {
-            // FIXED: Added error handling
             body.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:20px; color:red;">Error loading profile.</td></tr>`;
             console.error(err);
         });
@@ -744,7 +760,30 @@ function backToGradeSections() { document.getElementById('gradeSectionList').cla
 
 function handleFormSubmit(e, url, mid, isStudentUpdate = false) {
     e.preventDefault();
-    fetch(url, { method: 'POST', body: new FormData(e.target) }).then(r => r.json()).then(res => {
+    const formData = new FormData(e.target);
+    
+    if (mid === 'addSubjectModal' || mid === 'editSubjectModal') {
+        const start = formData.get('startTime');
+        const end = formData.get('endTime');
+        
+        if (start && end) {
+            const startDate = new Date(`1970-01-01T${start}:00`);
+            const endDate = new Date(`1970-01-01T${end}:00`);
+            
+            if (endDate <= startDate) {
+                showFeedback('error', 'Invalid Time', 'End time must be after start time.');
+                return;
+            }
+            
+            const diffMinutes = (endDate - startDate) / 60000; // milliseconds to minutes
+            if (diffMinutes > 120) {
+                 showFeedback('error', 'Invalid Duration', 'Subject duration cannot exceed 2 hours.');
+                 return;
+            }
+        }
+    }
+
+    fetch(url, { method: 'POST', body: formData }).then(r => r.json()).then(res => {
         if (res.status === 'success') { toggleModal(mid, false); if (isStudentUpdate) refreshStudents(); else window.location.reload(); }
         else showFeedback('error', 'Error', res.message);
     });
@@ -788,7 +827,17 @@ function handleEnroll(e) {
     });
 }
 
-function openEditSubject(s) { document.getElementById('edit_sub_id').value = s.subject_id; document.getElementById('edit_sub_sched').value = s.sched_code; document.getElementById('edit_sub_code').value = s.subject_code; document.getElementById('edit_sub_name').value = s.subject_name; document.getElementById('edit_sub_start').value = s.start_time; document.getElementById('edit_sub_end').value = s.end_time; document.getElementById('edit_sub_day').value = s.sched_day; toggleModal('editSubjectModal', true); }
+function openEditSubject(s) { 
+    document.getElementById('edit_sub_id').value = s.subject_id; 
+    document.getElementById('edit_sub_sched').value = s.sched_code; 
+    document.getElementById('edit_sub_code').value = s.subject_code; 
+    document.getElementById('edit_sub_name').value = s.subject_name; 
+    document.getElementById('edit_sub_start').value = s.start_time.substring(0, 5); 
+    document.getElementById('edit_sub_end').value = s.end_time.substring(0, 5); 
+    document.getElementById('edit_sub_day').value = s.sched_day; 
+    toggleModal('editSubjectModal', true); 
+}
+
 function openEditSection(sec) { document.getElementById('edit_sec_id').value = sec.section_id; document.getElementById('edit_sec_name').value = sec.section_name; document.getElementById('edit_sec_start').value = sec.sy_start; document.getElementById('edit_sec_end').value = sec.sy_end; document.getElementById('edit_sec_sem').value = sec.semester; toggleModal('editSectionModal', true); }
 
 function openEditStudent(s) {

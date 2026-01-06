@@ -9,7 +9,6 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-
 $conn->query("CREATE DATABASE IF NOT EXISTS `$dbname`");
 $conn->select_db($dbname);
 
@@ -87,6 +86,8 @@ $sql_enrollments = "CREATE TABLE IF NOT EXISTS enrollments (
         ON DELETE CASCADE
 ) ENGINE=InnoDB";
 
+
+
 $sql_attendance = "CREATE TABLE IF NOT EXISTS attendance_records (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     student_id INT UNSIGNED NOT NULL,
@@ -97,6 +98,9 @@ $sql_attendance = "CREATE TABLE IF NOT EXISTS attendance_records (
     status VARCHAR(50) NOT NULL DEFAULT 'Present',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    -- ADDED: Unique Key to prevent duplicate rows for the same student/subject/week
+    UNIQUE KEY unique_attendance (student_id, subject_id, week_number),
 
     CONSTRAINT fk_attendance_student
         FOREIGN KEY (student_id)
@@ -126,7 +130,8 @@ $sql_grades = "CREATE TABLE IF NOT EXISTS student_grades (
     subject_id INT UNSIGNED NOT NULL,
     instructor_id INT UNSIGNED NULL,
     assessment_type VARCHAR(100),
-    score DECIMAL(5,2),
+    -- UPDATED: Changed from DECIMAL to INT
+    score INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 

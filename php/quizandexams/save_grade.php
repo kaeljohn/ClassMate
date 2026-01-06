@@ -8,25 +8,91 @@ if (!isset($_SESSION['instructor_name'])) {
     exit();
 }
 
-$student_id = $_POST['student_id'] ?? null;
-$section_id = $_POST['section_id'] ?? null;
-$subject_id = $_POST['subject_id'] ?? null;
-$type = $_POST['type'] ?? null;
-$score = $_POST['score'] ?? 0;
+$student_id = intval($_POST['student_id'] ?? 0);
+$section_id = intval($_POST['section_id'] ?? 0);
+$subject_id = intval($_POST['subject_id'] ?? 0);
+$type       = trim($_POST['type'] ?? '');
+$score      = isset($_POST['score']) ? floatval($_POST['score']) : null;
 $instructor = $_SESSION['instructor_name'];
 
-if ($student_id && $section_id && $subject_id && $type) {
-    $stmt = $conn->prepare("INSERT INTO student_grades (student_id, section_id, subject_id, instructor_id, assessment_type, score) 
-                            VALUES (?, ?, ?, ?, ?, ?) 
-                            ON DUPLICATE KEY UPDATE score = VALUES(score)");
-    $stmt->bind_param("iiisss", $student_id, $section_id, $subject_id, $instructor, $type, $score);
-    
-    if ($stmt->execute()) {
-        echo json_encode(['status' => 'success']);
-    } else {
-        echo json_encode(['status' => 'error', 'message' => $conn->error]);
-    }
-} else {
+if (!$student_id || !$section_id || !$subject_id || !$type || $score === null) {
     echo json_encode(['status' => 'error', 'message' => 'Invalid data']);
+    exit();
 }
-?>
+
+/* ---------- CHECK IF GRADE EXISTS ---------- */
+$check = $conn->prepare(
+    "SELECT id FROM student_grades
+     WHERE student_id = ?
+       AND section_id = ?
+       AND subject_id = ?
+       AND assessment_type = ?
+       AND instructor_id = ?"
+);
+$check->bind_param(
+    "iiiss",
+    $student_id,
+    $section_id,
+    $subject_id,
+    $type,
+    $instructor
+);
+$check->execute();
+$check->store_result();
+
+/* ---------- UPDATE OR INSERT ---------- */
+if ($check->num_rows > 0) {
+
+    $update = $conn->prepare(
+        "UPDATE student_grades
+         SET score = ?
+         WHERE student_id = ?
+           AND section_id = ?
+           AND subject_id = ?
+           AND assessment_type = ?
+           AND instructor_id = ?"
+    );
+
+    $update->bind_param(
+        "diiiss",
+        $score,
+        $student_id,
+        $section_id,
+        $subject_id,
+        $type,
+        $instructor
+    );
+
+    $ok = $update->execute();
+    $update->close();
+
+} else {
+
+    $insert = $conn->prepare(
+        "INSERT INTO student_grades
+            (student_id, section_id, subject_id, instructor_id, assessment_type, score)
+         VALUES (?, ?, ?, ?, ?, ?)"
+    );
+
+    $insert->bind_param(
+        "iiissd",
+        $student_id,
+        $section_id,
+        $subject_id,
+        $instructor,
+        $type,
+        $score
+    );
+
+    $ok = $insert->execute();
+    $insert->close();
+}
+
+$check->close();
+
+echo json_encode([
+    'status' => $ok ? 'success' : 'error',
+    'message' => $ok ? 'Grade saved' : $conn->error
+]);
+
+$conn->close();
