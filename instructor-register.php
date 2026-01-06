@@ -42,7 +42,6 @@
         <p class="subtitle">Create your instructor account</p>
 
         <form id="registerForm" onsubmit="handleRegister(event)">
-            <!-- Name Fields -->
             <div class="row-group">
                 <div class="input-group">
                     <i class="fa-solid fa-user"></i>
@@ -70,7 +69,6 @@
 
             <div class="input-group">
                 <i class="fa-solid fa-id-card"></i>
-                <!-- Added pattern, inputmode, and oninput to enforce numericality -->
                 <input type="text" name="instructor_id" placeholder="Create ID" 
                        pattern="[0-9]+" 
                        inputmode="numeric" 

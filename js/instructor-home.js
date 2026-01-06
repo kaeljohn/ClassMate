@@ -230,9 +230,7 @@ function renderGradeSheet(sec, sub) {
     const header = document.getElementById('gradeTableHeader');
     let html = '<th class="fixed-col">Student Name</th>';
     
-    // Helper to generate headers
     const genHead = (lbl, type) => {
-        // Default to 100 if undefined, but respect 0 if explicitly set
         let max = currentMaxScores[type];
         if (max === undefined) max = 100;
 
@@ -247,7 +245,6 @@ function renderGradeSheet(sec, sub) {
     html += genHead('Finals', 'Finals');
     header.innerHTML = html;
 
-    // Fetch Enrolled Students
     fetch(`php/attendance/get_enrolled_students.php?section_id=${sec.section_id}&subject_id=${sub.subject_id}`).then(r => r.json()).then(res => {
         const tbody = document.getElementById('gradeTableBody');
         tbody.innerHTML = '';
@@ -255,12 +252,10 @@ function renderGradeSheet(sec, sub) {
             res.data.sort((a, b) => a.last_name.localeCompare(b.last_name)).forEach(s => {
                 let html = `<tr><td class="fixed-col"><strong>${s.last_name}, ${s.first_name}</strong></td>`;
                 
-                // Helper to generate cells
                 const genCell = (type) => {
                     let max = currentMaxScores[type];
                     if (max === undefined) max = 100;
                     
-                    // DISABLE INPUT IF MAX IS 0
                     const isDisabled = (max === 0) ? 'disabled style="background:#f1f5f9; cursor:not-allowed;"' : '';
                     
                     return `<td><input class="grade-input" type="number" id="g-${s.student_id}-${type}" onchange="saveGrade(${s.student_id}, '${type}', this)" ${isDisabled}></td>`;
@@ -292,9 +287,8 @@ function promptMaxScore(type) {
     const currentMax = currentMaxScores[type] !== undefined ? currentMaxScores[type] : 100;
     
     document.getElementById('maxScoreModalLabel').innerText = `Enter Max Score for ${type}`;
-    // Allow 0 to disable
     document.getElementById('maxScoreInput').value = currentMax;
-    document.getElementById('maxScoreInput').min = 0; // Ensure input allows 0
+    document.getElementById('maxScoreInput').min = 1;
     toggleModal('maxScoreModal', true);
 }
 
@@ -303,8 +297,7 @@ function saveMaxScoreFromModal(e) {
     const newMax = document.getElementById('maxScoreInput').value;
     const type = currentMaxScoreType;
     
-    // Allow 0, but reject empty or negative
-    if (newMax === '' || parseInt(newMax) < 0) return;
+    if (newMax === '' || parseInt(newMax) < 1) return;
     
     const val = parseInt(newMax);
 
@@ -322,7 +315,6 @@ function saveMaxScoreFromModal(e) {
                 document.getElementById(`header-max-${type}`).innerText = `/ ${val}`;
                 toggleModal('maxScoreModal', false);
                 
-                // Re-render to disable/enable inputs immediately
                 renderGradeSheet(currentSection, currentSubject);
             } else {
                 showFeedback('error', 'Save Failed', "Failed to save max score.");

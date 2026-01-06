@@ -14,7 +14,6 @@ $subject_id = $_POST['subject_id'] ?? null;
 $assessment_type = $_POST['assessment_type'] ?? null;
 $max_score = $_POST['max_score'] ?? null;
 
-// Removed max_score !== '' and 0 checks. Now requires a positive value.
 if ($section_id && $assessment_type && intval($max_score) > 0) {
     $stmt = $conn->prepare("INSERT INTO assessment_settings (section_id, subject_id, instructor_id, assessment_type, max_score) 
                             VALUES (?, ?, ?, ?, ?) 

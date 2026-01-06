@@ -4,7 +4,6 @@ include '../db_connect.php';
 
 header('Content-Type: application/json');
 
-// FIX: Changed 'instructor_id' to 'instructor_name' to match your login session
 if (!isset($_SESSION['instructor_name'])) {
     echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
     exit();
@@ -15,7 +14,7 @@ $section_id  = $_POST['section_id']  ?? null;
 $subject_id  = $_POST['subject_id']  ?? null;
 $week        = $_POST['week']        ?? null;
 $status      = $_POST['status']      ?? 'NONE';
-$instructor_id = $_SESSION['instructor_name']; // Match session variable
+$instructor_id = $_SESSION['instructor_name']; 
 
 if ($student_id && $section_id && $week && $subject_id) {
     $stmt = $conn->prepare("INSERT INTO attendance_records (student_id, section_id, subject_id, instructor_id, week_number, status) 

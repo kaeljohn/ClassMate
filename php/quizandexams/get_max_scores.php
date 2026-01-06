@@ -14,8 +14,6 @@ $subject_id = $_POST['subject_id'] ?? null;
 $assessment_type = $_POST['assessment_type'] ?? null;
 $max_score = $_POST['max_score'] ?? null;
 
-// FIX: We must check if max_score is set and not empty string, but explicitly ALLOW '0'.
-// Previous code: if ($max_score) failed because 0 is false in PHP.
 if ($section_id && $assessment_type && isset($max_score) && $max_score !== '') {
     
     $stmt = $conn->prepare("INSERT INTO assessment_settings (section_id, subject_id, instructor_id, assessment_type, max_score) 

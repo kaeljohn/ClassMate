@@ -6,10 +6,6 @@ $user = "root";
 $pass = "";
 $dbname = "classmate_db";
 
-/* =========================
-   REQUIRE LOGGED-IN INSTRUCTOR
-   ========================= */
-
 if (!isset($_SESSION['instructor_name'])) {
    die("No instructor logged in.");
 }

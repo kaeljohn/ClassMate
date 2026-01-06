@@ -20,7 +20,6 @@ if (!$student_id || !$section_id || !$subject_id || !$type || $score === null) {
     exit();
 }
 
-/* ---------- CHECK IF GRADE EXISTS ---------- */
 $check = $conn->prepare(
     "SELECT id FROM student_grades
      WHERE student_id = ?
@@ -40,7 +39,6 @@ $check->bind_param(
 $check->execute();
 $check->store_result();
 
-/* ---------- UPDATE OR INSERT ---------- */
 if ($check->num_rows > 0) {
 
     $update = $conn->prepare(

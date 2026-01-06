@@ -72,10 +72,8 @@ while ($row = $res_sections->fetch_assoc()) {
     <script src="js/charts.js"></script>
 
     <style>
-        /* Z-Index Fixes for Modals */
         .modal {
             z-index: 1000;
-            /* Standard Modal Layer */
         }
 
         /* Higher Priority Modals (Alerts, Confirmations) */
@@ -247,7 +245,7 @@ while ($row = $res_sections->fetch_assoc()) {
         </div>
     </div>
 
-    <!-- STUDENT GRADES BREAKDOWN MODAL (Old Single Subject) -->
+    <!-- STUDENT GRADES BREAKDOWN MODAL -->
     <div id="studentGradesModal" class="modal">
         <div class="modal-content" style="width:100%; max-width:600px;">
             <div class="modal-banner">
@@ -273,7 +271,6 @@ while ($row = $res_sections->fetch_assoc()) {
         </div>
     </div>
 
-    <!-- NEW: STUDENT PROFILE GRADE BREAKDOWN MODAL (All Subjects) -->
     <div id="studentProfileGradesModal" class="modal">
         <div class="modal-content" style="width:100%; max-width:700px;">
             <div class="modal-banner">
@@ -452,7 +449,6 @@ while ($row = $res_sections->fetch_assoc()) {
                 </div>
                 <div class="content-scroll">
                     <?php if (empty($subjects_list)): ?>
-                        <!-- EMPTY STATE FOR SUBJECTS -->
                         <div class="empty-state">
                             <i class="fa-solid fa-book-open-reader"></i>
                             <h4>No Subjects Found</h4>
@@ -479,8 +475,6 @@ while ($row = $res_sections->fetch_assoc()) {
                                             </td>
                                             <td>
                                                 <?php
-                                                // UPDATE: Display Start AND End Time in Military Format (H:i)
-                                                // Example: 14:30 - 15:30
                                                 $startTime = date("h:i A", strtotime($s['start_time']));
                                                 $endTime = date("h:i A", strtotime($s['end_time']));
                                                 echo $s['sched_day'] . " <small class='text-muted'>$startTime - $endTime</small>";
@@ -516,7 +510,6 @@ while ($row = $res_sections->fetch_assoc()) {
                     </div>
 
                     <?php if (empty($sections_arr)): ?>
-                        <!-- EMPTY STATE FOR SECTIONS -->
                         <div class="empty-state">
                             <i class="fa-solid fa-users-rectangle"></i>
                             <h4>No Sections Added</h4>
@@ -691,7 +684,6 @@ while ($row = $res_sections->fetch_assoc()) {
                             <thead>
                                 <tr id="gradeTableHeader">
                                     <th class="fixed-col">Student Name</th>
-                                    <!-- JS will fill Q1-Q10, Midterm, Finals -->
                                 </tr>
                             </thead>
                             <tbody id="gradeTableBody"></tbody>
@@ -711,7 +703,6 @@ while ($row = $res_sections->fetch_assoc()) {
                         </div>
                     </div>
                     <div class="grid-cards">
-                        <!-- Analytics Cards (No Changes Needed here) -->
                         <div class="grid-item analytics-card" onclick="selectAnalyticsType('low_attendance')">
                             <i class="fa-solid fa-user-clock analytics-opt-icon" style="color:#ef4444;"></i>
                             <h3>Low Attendance</h3>
@@ -1035,7 +1026,6 @@ while ($row = $res_sections->fetch_assoc()) {
                             style="flex-grow:1; padding:10px; border-radius:10px; border:1px solid var(--primary-light);">
                             <option value="">Select Subject</option>
                             <?php foreach ($subjects_list as $sl): ?>
-                                <!-- UPDATE 2: Show Subject Name in Quick Enroll -->
                                 <option value="<?php echo $sl['subject_id']; ?>">
                                     <?php echo $sl['subject_code'] . ' - ' . $sl['subject_name']; ?></option>
                             <?php endforeach; ?>

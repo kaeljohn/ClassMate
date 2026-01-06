@@ -9,12 +9,9 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-/* =========================
-   CONFIG
-   ========================= */
 $weeks = 18;
 
-// Attendance weights (single-letter codes)
+// Attendance weights
 $attendanceWeights = [
     'P' => 70, // Present
     'L' => 15, // Late

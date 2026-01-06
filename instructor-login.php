@@ -44,7 +44,6 @@
         <form id="loginForm" onsubmit="handleLogin(event)">
             <div class="input-group">
                 <i class="fa-solid fa-id-card"></i>
-                <!-- Added pattern, inputmode, and oninput to enforce numericality -->
                 <input type="text" name="instructor_id" placeholder="Instructor ID"
                        pattern="[0-9]+" 
                        inputmode="numeric" 

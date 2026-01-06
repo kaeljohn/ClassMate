@@ -27,9 +27,7 @@ $WEIGHT_QUIZZES    = 0.20;
 $WEIGHT_EXAMS      = 0.60;
 $TOTAL_WEEKS       = 18; 
 
-// --- HELPER: Compute Grade for a Single Subject ---
 function calculateSubjectGrade($conn, $student_id, $section_id, $subject_id, $instructor_id, $WEIGHT_ATTENDANCE, $WEIGHT_QUIZZES, $WEIGHT_EXAMS, $TOTAL_WEEKS) {
-    // 1. Get Max Scores for this Subject
     $sql_max = "SELECT assessment_type, max_score FROM assessment_settings WHERE section_id = ? AND instructor_id = ? AND subject_id = ?";
     $stmt_max = $conn->prepare($sql_max);
     $stmt_max->bind_param("iii", $section_id, $instructor_id, $subject_id);
@@ -41,7 +39,6 @@ function calculateSubjectGrade($conn, $student_id, $section_id, $subject_id, $in
         $max_scores[$row['assessment_type']] = (int)$row['max_score'];
     }
 
-    // 2. Attendance
     $stmt_att = $conn->prepare("SELECT COUNT(*) as c FROM attendance_records WHERE student_id = ? AND section_id = ? AND subject_id = ? AND status IN ('P', 'L')");
     $stmt_att->bind_param("iii", $student_id, $section_id, $subject_id);
     $stmt_att->execute();
@@ -50,7 +47,6 @@ function calculateSubjectGrade($conn, $student_id, $section_id, $subject_id, $in
     $att_grade = ($att_count / $TOTAL_WEEKS) * 100;
     if($att_grade > 100) $att_grade = 100;
 
-    // 3. Quizzes & Exams
     $stmt_grades = $conn->prepare("SELECT assessment_type, score FROM student_grades WHERE student_id = ? AND section_id = ? AND subject_id = ?");
     $stmt_grades->bind_param("iii", $student_id, $section_id, $subject_id);
     $stmt_grades->execute();
@@ -104,14 +100,12 @@ function getCollegeGrade($score) {
 
 switch ($type) {
     case 'ranking':
-        // 1. Get All Students in Section
         $students = $conn->query("SELECT student_id, first_name, last_name FROM students WHERE section_id = '$section_id'")->fetch_all(MYSQLI_ASSOC);
         $data = [];
 
         foreach($students as $s) {
             $sid = $s['student_id'];
             
-            // 2. Get Enrolled Subjects
             $sql_subs = "SELECT s.subject_id 
                          FROM subjects s 
                          JOIN enrollments e ON s.subject_id = e.subject_id 
