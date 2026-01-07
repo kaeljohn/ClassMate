@@ -55,8 +55,9 @@ $sql_subjects = "CREATE TABLE IF NOT EXISTS subjects (
 
 $sql_students = "CREATE TABLE IF NOT EXISTS students (
     student_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    instructor_id INT UNSIGNED NULL,
     section_id INT UNSIGNED NULL,
-    student_id_number VARCHAR(50) UNIQUE,
+    student_id_number VARCHAR(50),
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
     middle_initial VARCHAR(10),
@@ -65,6 +66,14 @@ $sql_students = "CREATE TABLE IF NOT EXISTS students (
     status VARCHAR(50) DEFAULT 'Active',
     profile_image VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    UNIQUE KEY unique_student_per_instructor (instructor_id, student_id_number),
+
+    CONSTRAINT fk_students_instructor
+        FOREIGN KEY (instructor_id)
+        REFERENCES instructors(instructor_id)
+        ON DELETE SET NULL,
+
     CONSTRAINT fk_students_section
         FOREIGN KEY (section_id)
         REFERENCES sections(section_id)
@@ -86,8 +95,6 @@ $sql_enrollments = "CREATE TABLE IF NOT EXISTS enrollments (
         ON DELETE CASCADE
 ) ENGINE=InnoDB";
 
-
-
 $sql_attendance = "CREATE TABLE IF NOT EXISTS attendance_records (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     student_id INT UNSIGNED NOT NULL,
@@ -99,7 +106,6 @@ $sql_attendance = "CREATE TABLE IF NOT EXISTS attendance_records (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-    -- ADDED: Unique Key to prevent duplicate rows for the same student/subject/week
     UNIQUE KEY unique_attendance (student_id, subject_id, week_number),
 
     CONSTRAINT fk_attendance_student
@@ -130,7 +136,6 @@ $sql_grades = "CREATE TABLE IF NOT EXISTS student_grades (
     subject_id INT UNSIGNED NOT NULL,
     instructor_id INT UNSIGNED NULL,
     assessment_type VARCHAR(100),
-    -- UPDATED: Changed from DECIMAL to INT
     score INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

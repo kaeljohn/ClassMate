@@ -7,9 +7,25 @@ header('Content-Type: application/json');
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $instructor = $_SESSION['instructor_name'];
     $sectionName = $_POST['sectionName'];
-    $syStart = $_POST['syStart'];
-    $syEnd = $_POST['syEnd'];
+    $syStart = intval($_POST['syStart']);
+    $syEnd = intval($_POST['syEnd']);  
     $semester = $_POST['semester'];
+
+    if ($syEnd <= $syStart) {
+        echo json_encode([
+            'status' => 'error', 
+            'message' => 'End school year cannot be less than or equal to the start school year.'
+        ]);
+        exit();
+    }
+
+    if (($syEnd - $syStart) > 1) {
+        echo json_encode([
+            'status' => 'error', 
+            'message' => 'School year range cannot exceed 1 year (e.g., 2026-2027 is valid, 2026-2028 is not).'
+        ]);
+        exit();
+    }
 
     $checkSql = "SELECT section_id FROM sections WHERE instructor_id = ? AND section_name = ?";
     $checkStmt = $conn->prepare($checkSql);

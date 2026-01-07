@@ -1,7 +1,14 @@
 <?php
+session_start();
 include '../db_connect.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    if (!isset($_SESSION['instructor_name'])) {
+        echo json_encode(['status' => 'error', 'message' => 'Unauthorized access.']);
+        exit;
+    }
+
+    $instructor_id = $_SESSION['instructor_name'];
     $section_id = $_POST['section_id'] ?? null;
     $student_id_number = $_POST['studentIdNumber'] ?? '';
     $first_name = $_POST['firstName'] ?? '';
@@ -16,13 +23,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit;
     }
 
-    $check_stmt = $conn->prepare("SELECT student_id FROM students WHERE student_id_number = ?");
-    $check_stmt->bind_param("s", $student_id_number);
+    $check_sql = "SELECT s.student_id 
+                  FROM students s
+                  INNER JOIN sections sec ON s.section_id = sec.section_id
+                  WHERE s.student_id_number = ? AND sec.instructor_id = ?";
+                  
+    $check_stmt = $conn->prepare($check_sql);
+    $check_stmt->bind_param("ss", $student_id_number, $instructor_id);
     $check_stmt->execute();
     $check_result = $check_stmt->get_result();
 
     if ($check_result->num_rows > 0) {
-        echo json_encode(['status' => 'error', 'message' => 'A student with this ID Number already exists.']);
+        echo json_encode(['status' => 'error', 'message' => 'This Student ID Number is already registered in one of your sections.']);
         $check_stmt->close();
         exit;
     }

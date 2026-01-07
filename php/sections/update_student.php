@@ -3,7 +3,6 @@ header('Content-Type: application/json');
 session_start();
 include '../db_connect.php';
 
-// Check if user is logged in
 if (!isset($_SESSION['instructor_name'])) {
     echo json_encode(['status' => 'error', 'message' => 'Unauthorized access.']);
     exit();

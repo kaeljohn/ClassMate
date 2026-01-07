@@ -16,6 +16,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $startTs = strtotime($startTime);
     $endTs = strtotime($endTime);
 
+    // 1. Basic Validation
     if ($endTs <= $startTs) {
         echo json_encode([
             'status' => 'error', 
@@ -25,14 +26,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     $duration = $endTs - $startTs;
-    if ($duration > 7200) {
+    // Updated duration limit from 2 hours (7200s) to 3 hours (10800s)
+    if ($duration > 10800) {
         echo json_encode([
             'status' => 'error', 
-            'message' => 'Subject duration cannot exceed 2 hours.'
+            'message' => 'Subject duration cannot exceed 3 hours.'
         ]);
         exit();
     }
 
+    // 2. Check for Duplicate Subject Code
     $checkSql = "SELECT subject_id FROM subjects WHERE instructor_id = ? AND subject_code = ?";
     $checkStmt = $conn->prepare($checkSql);
     $checkStmt->bind_param("ss", $instructor, $subjectCode);
@@ -49,6 +52,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
     $checkStmt->close();
 
+    // 3. Check for Schedule Conflicts (Day & Time Overlap)
+    $conflictSql = "SELECT subject_id, subject_code, start_time, end_time FROM subjects 
+                    WHERE instructor_id = ? 
+                    AND sched_day = ? 
+                    AND start_time < ? 
+                    AND end_time > ?";
+    
+    $conflictStmt = $conn->prepare($conflictSql);
+    $conflictStmt->bind_param("ssss", $instructor, $schedDay, $endTime, $startTime);
+    $conflictStmt->execute();
+    $conflictResult = $conflictStmt->get_result();
+
+    if ($conflictResult->num_rows > 0) {
+        $conflictRow = $conflictResult->fetch_assoc();
+        echo json_encode([
+            'status' => 'error', 
+            'message' => "Schedule Conflict: This time overlaps with {$conflictRow['subject_code']} ({$conflictRow['start_time']} - {$conflictRow['end_time']})."
+        ]);
+        $conflictStmt->close();
+        exit();
+    }
+    $conflictStmt->close();
+
+    // 4. Insert New Subject
     $sql = "INSERT INTO subjects (instructor_id, sched_code, subject_code, subject_name, start_time, end_time, sched_day) 
             VALUES (?, ?, ?, ?, ?, ?, ?)";
     
