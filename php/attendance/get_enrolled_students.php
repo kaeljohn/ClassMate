@@ -7,6 +7,7 @@ $subject_id = $_GET['subject_id'] ?? null;
 
 if ($section_id) {
     if ($subject_id) {
+        // 1. Fetch students enrolled in specific Subject AND Section
         $sql = "SELECT s.* FROM students s
                 INNER JOIN enrollments e ON s.student_id = e.student_id
                 WHERE s.section_id = ? AND e.subject_id = ?
@@ -14,6 +15,7 @@ if ($section_id) {
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("ii", $section_id, $subject_id);
     } else {
+        // 2. Fetch all students in Section (regardless of enrollment)
         $sql = "SELECT * FROM students WHERE section_id = ? ORDER BY last_name ASC";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $section_id);

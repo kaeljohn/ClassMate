@@ -6,6 +6,7 @@ if (isset($_GET['section_id']) && isset($_GET['subject_id'])) {
     $section_id = mysqli_real_escape_string($conn, $_GET['section_id']);
     $subject_id = mysqli_real_escape_string($conn, $_GET['subject_id']);
 
+    // 1. Select attendance status for the specific class context
     $sql = "SELECT student_id, week_number, status 
             FROM attendance_records 
             WHERE section_id = '$section_id' AND subject_id = '$subject_id'";

@@ -6,6 +6,7 @@ if (isset($_GET['section_id']) && isset($_GET['subject_id'])) {
     $section_id = mysqli_real_escape_string($conn, $_GET['section_id']);
     $subject_id = mysqli_real_escape_string($conn, $_GET['subject_id']);
     
+    // 1. Fetch grades matching the criteria
     $sql = "SELECT student_id, assessment_type, score 
             FROM student_grades 
             WHERE section_id = '$section_id' AND subject_id = '$subject_id'";

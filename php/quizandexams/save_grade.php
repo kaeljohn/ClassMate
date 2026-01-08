@@ -8,6 +8,7 @@ if (!isset($_SESSION['instructor_name'])) {
     exit();
 }
 
+// 1. Capture inputs
 $student_id = intval($_POST['student_id'] ?? 0);
 $section_id = intval($_POST['section_id'] ?? 0);
 $subject_id = intval($_POST['subject_id'] ?? 0);
@@ -20,6 +21,7 @@ if (!$student_id || !$section_id || !$subject_id || !$type || $score === null) {
     exit();
 }
 
+// 2. Check if a grade already exists for this student/subject/assessment
 $check = $conn->prepare(
     "SELECT id FROM student_grades
      WHERE student_id = ?
@@ -40,7 +42,7 @@ $check->execute();
 $check->store_result();
 
 if ($check->num_rows > 0) {
-
+    // 3. UPDATE existing record
     $update = $conn->prepare(
         "UPDATE student_grades
          SET score = ?
@@ -65,7 +67,7 @@ if ($check->num_rows > 0) {
     $update->close();
 
 } else {
-
+    // 4. INSERT new record
     $insert = $conn->prepare(
         "INSERT INTO student_grades
             (student_id, section_id, subject_id, instructor_id, assessment_type, score)
@@ -94,3 +96,4 @@ echo json_encode([
 ]);
 
 $conn->close();
+?>

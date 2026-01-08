@@ -1,33 +1,51 @@
 <?php
+/**
+ * Analytics Data Retrieval Script
+ * This script handles various analytical queries for instructors, including
+ * student rankings, attendance breakdowns, and grade calculations.
+ */
+
 session_start();
 include '../db_connect.php';
 header('Content-Type: application/json');
 
+// --- AUTHENTICATION CHECK ---
+// Ensure only logged-in instructors can access the analytics data
 if (!isset($_SESSION['instructor_name'])) {
     echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
     exit();
 }
 $instructor_id = $_SESSION['instructor_name'];
 
+// --- INPUT VALIDATION ---
+// Capture parameters from the URL (GET request)
 $section_id = $_GET['section_id'] ?? null;
-$type = $_GET['type'] ?? '';
+$type       = $_GET['type'] ?? '';      // Determines which analytics block to run
 $subject_id = $_GET['subject_id'] ?? null;
 $student_id = $_GET['student_id'] ?? null;
 
+// The section ID is required for almost all operations
 if (!$section_id) {
     echo json_encode(['status' => 'error', 'message' => 'No section selected']);
     exit();
 }
 
+// Prepare the default success response structure
 $response = ['status' => 'success', 'data' => []];
 
-// --- CONSTANTS ---
-$WEIGHT_ATTENDANCE = 0.20;
-$WEIGHT_QUIZZES    = 0.20;
-$WEIGHT_EXAMS      = 0.60;
-$TOTAL_WEEKS       = 18; 
+// --- GRADING CONFIGURATION ---
+// Define the weights for the final grade calculation
+$WEIGHT_ATTENDANCE = 0.20; // 20%
+$WEIGHT_QUIZZES    = 0.20; // 20%
+$WEIGHT_EXAMS      = 0.60; // 60%
+$TOTAL_WEEKS       = 18;   // Basis for attendance percentage
 
+/**
+ * Calculates a student's grade for a specific subject based on attendance, quizzes, and exams.
+ */
 function calculateSubjectGrade($conn, $student_id, $section_id, $subject_id, $instructor_id, $WEIGHT_ATTENDANCE, $WEIGHT_QUIZZES, $WEIGHT_EXAMS, $TOTAL_WEEKS) {
+    
+    // 1. Fetch maximum possible scores for each assessment type from settings
     $sql_max = "SELECT assessment_type, max_score FROM assessment_settings WHERE section_id = ? AND instructor_id = ? AND subject_id = ?";
     $stmt_max = $conn->prepare($sql_max);
     $stmt_max->bind_param("iii", $section_id, $instructor_id, $subject_id);
@@ -39,14 +57,17 @@ function calculateSubjectGrade($conn, $student_id, $section_id, $subject_id, $in
         $max_scores[$row['assessment_type']] = (int)$row['max_score'];
     }
 
+    // 2. Calculate Attendance Grade
+    // Counts "Present" (P) and "Late" (L) as valid attendance days
     $stmt_att = $conn->prepare("SELECT COUNT(*) as c FROM attendance_records WHERE student_id = ? AND section_id = ? AND subject_id = ? AND status IN ('P', 'L')");
     $stmt_att->bind_param("iii", $student_id, $section_id, $subject_id);
     $stmt_att->execute();
     $att_count = $stmt_att->get_result()->fetch_assoc()['c'];
     
     $att_grade = ($att_count / $TOTAL_WEEKS) * 100;
-    if($att_grade > 100) $att_grade = 100;
+    if($att_grade > 100) $att_grade = 100; // Cap at 100%
 
+    // 3. Fetch Student's actual scores
     $stmt_grades = $conn->prepare("SELECT assessment_type, score FROM student_grades WHERE student_id = ? AND section_id = ? AND subject_id = ?");
     $stmt_grades->bind_param("iii", $student_id, $section_id, $subject_id);
     $stmt_grades->execute();
@@ -55,26 +76,32 @@ function calculateSubjectGrade($conn, $student_id, $section_id, $subject_id, $in
     $quiz_total = 0; $quiz_items = 0;
     $exam_total = 0; $exam_items = 0;
 
+    // 4. Categorize and aggregate scores
     while($g = $res_grades->fetch_assoc()) {
         $g_type = $g['assessment_type'];
         $score = (float)$g['score'];
-        $max = $max_scores[$g_type] ?? 100;
+        $max = $max_scores[$g_type] ?? 100; // Default to 100 if max score isn't set
 
         $percentage = ($score / $max) * 100;
         if ($percentage > 100) $percentage = 100;
 
+        // Quizzes are identified by the string "Quiz"
         if (strpos($g_type, 'Quiz') !== false) {
             $quiz_total += $percentage;
             $quiz_items++;
-        } else if ($g_type == 'Midterm' || $g_type == 'Finals') {
+        } 
+        // Exams are strictly "Midterm" or "Finals"
+        else if ($g_type == 'Midterm' || $g_type == 'Finals') {
             $exam_total += $percentage;
             $exam_items++;
         }
     }
 
+    // Calculate averages for categories
     $quiz_grade = ($quiz_items > 0) ? ($quiz_total / $quiz_items) : 0;
     $exam_grade = ($exam_items > 0) ? ($exam_total / $exam_items) : 0;
 
+    // Apply weights to get the final raw percentage (0-100)
     $final_raw = ($att_grade * $WEIGHT_ATTENDANCE) + ($quiz_grade * $WEIGHT_QUIZZES) + ($exam_grade * $WEIGHT_EXAMS);
     
     return [
@@ -84,6 +111,9 @@ function calculateSubjectGrade($conn, $student_id, $section_id, $subject_id, $in
     ];
 }
 
+/**
+ * Converts a 0-100 percentage score into a standard college point system (1.00 to 5.00).
+ */
 function getCollegeGrade($score) {
     if ($score > 100) $score = 100;
     if ($score >= 97) return "1.00";
@@ -95,10 +125,13 @@ function getCollegeGrade($score) {
     if ($score >= 79) return "2.50";
     if ($score >= 76) return "2.75";
     if ($score >= 75) return "3.00";
-    return "5.00";
+    return "5.00"; // Failing grade
 }
 
+// --- ANALYTICS ROUTING ---
 switch ($type) {
+    
+    // Case: Ranking - Returns students sorted by their average across all handled subjects
     case 'ranking':
         $students = $conn->query("SELECT student_id, first_name, last_name FROM students WHERE section_id = '$section_id'")->fetch_all(MYSQLI_ASSOC);
         $data = [];
@@ -106,6 +139,7 @@ switch ($type) {
         foreach($students as $s) {
             $sid = $s['student_id'];
             
+            // Get subjects for this student specifically assigned to the current instructor
             $sql_subs = "SELECT s.subject_id 
                          FROM subjects s 
                          JOIN enrollments e ON s.subject_id = e.subject_id 
@@ -132,10 +166,12 @@ switch ($type) {
             }
         }
         
+        // Sort the data array in descending order based on the raw average
         usort($data, function($a, $b) { return $b['raw_avg'] <=> $a['raw_avg']; });
         $response['data'] = $data;
         break;
 
+    // Case: Student Averages - Simple list of students for selection dropdowns
     case 'student_averages':
         $sql = "SELECT student_id, first_name, last_name FROM students WHERE section_id = ? ORDER BY last_name ASC";
         $stmt = $conn->prepare($sql);
@@ -153,6 +189,7 @@ switch ($type) {
         $response['data'] = $list;
         break;
 
+    // Case: Student Breakdown - Detailed grade info for a specific student
     case 'student_breakdown':
         if (!$student_id) {
             $response = ['status' => 'error', 'message' => 'Missing student ID'];
@@ -189,6 +226,7 @@ switch ($type) {
         ];
         break;
 
+    // Case: Low Attendance - Identifies students with less than 75% attendance
     case 'low_attendance':
         if (!$subject_id) {
             $response = ['status' => 'error', 'message' => 'Subject ID required'];
@@ -211,6 +249,7 @@ switch ($type) {
         $response['data'] = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         break;
 
+    // Case: Attendance Chart - Aggregates status counts (P, L, E, A) for visualization
     case 'attendance_chart':
         if (!$subject_id) {
             $response = ['status' => 'error', 'message' => 'Subject ID required'];
@@ -226,6 +265,7 @@ switch ($type) {
         $response['data'] = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         break;
         
+    // Case: Late/Absent - Returns a list of students with their total lates and absences
     case 'late_absent':
         if (!$subject_id) {
             $response = ['status' => 'error', 'message' => 'Subject ID required'];
@@ -252,6 +292,7 @@ switch ($type) {
         $response = ['status' => 'error', 'message' => 'Invalid analytics type'];
 }
 
+// Return final JSON response and close connection
 echo json_encode($response);
 $conn->close();
 ?>

@@ -9,6 +9,7 @@ if (!isset($_SESSION['instructor_name'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // 1. Sanitize inputs
     $student_id = mysqli_real_escape_string($conn, $_POST['student_id']);
     $student_id_number = mysqli_real_escape_string($conn, $_POST['studentIdNumber']);
     $first_name = mysqli_real_escape_string($conn, $_POST['firstName']);
@@ -18,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $status = mysqli_real_escape_string($conn, $_POST['status']);
     $course = mysqli_real_escape_string($conn, $_POST['course']);
 
+    // 2. Check for Unique Student ID Number (excluding current student)
     $check_sql = "SELECT student_id FROM students WHERE student_id_number = '$student_id_number' AND student_id != '$student_id'";
     $check_res = $conn->query($check_sql);
 
@@ -26,6 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
+    // 3. Perform Update
     $update_sql = "UPDATE students SET 
                     student_id_number = '$student_id_number',
                     first_name = '$first_name',

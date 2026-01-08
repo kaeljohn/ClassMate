@@ -11,7 +11,8 @@ if (!isset($_SESSION['instructor_name'])) {
 if (isset($_GET['id'])) {
     $student_id = (int)$_GET['id'];
     
-    
+    // 1. Delete student
+    // Note: Due to ON DELETE CASCADE in MySQL setup, this also deletes related grades/attendance
     $stmt = $conn->prepare("DELETE FROM students WHERE student_id = ?");
     $stmt->bind_param("i", $student_id);
 

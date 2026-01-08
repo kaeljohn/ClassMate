@@ -11,6 +11,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $syEnd = intval($_POST['syEnd']);
     $semester = $_POST['semester'];
     
+    // 1. Validate School Years
     if ($syEnd <= $syStart) {
         echo json_encode([
             'status' => 'error', 
@@ -27,6 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
 
+    // 2. Check for duplicate names (excluding current ID)
     $instructor = $_SESSION['instructor_name'];
     $checkSql = "SELECT section_id FROM sections WHERE instructor_id = ? AND section_name = ? AND section_id != ?";
     $checkStmt = $conn->prepare($checkSql);
@@ -44,6 +46,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
     $checkStmt->close();
 
+    // 3. Update the section
     $sql = "UPDATE sections SET 
             section_name = ?, 
             sy_start = ?, 

@@ -4,14 +4,19 @@ $user = "root";
 $pass = "";
 $dbname = "classmate_db";
 
+// 1. Establish initial connection to MySQL server (without selecting a DB yet)
 $conn = new mysqli($host, $user, $pass);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+// 2. Create the database if it doesn't exist and select it
 $conn->query("CREATE DATABASE IF NOT EXISTS `$dbname`");
 $conn->select_db($dbname);
 
+// 3. Define SQL queries to create tables
+
+// Table for Instructor accounts
 $sql_instructors = "CREATE TABLE IF NOT EXISTS instructors (
     instructor_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     password VARCHAR(255) NOT NULL,
@@ -23,6 +28,7 @@ $sql_instructors = "CREATE TABLE IF NOT EXISTS instructors (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB";
 
+// Table for Class Sections (linked to an instructor)
 $sql_sections = "CREATE TABLE IF NOT EXISTS sections (
     section_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     instructor_id INT UNSIGNED NULL,
@@ -37,6 +43,7 @@ $sql_sections = "CREATE TABLE IF NOT EXISTS sections (
         ON DELETE SET NULL
 ) ENGINE=InnoDB";
 
+// Table for Subjects (Courses)
 $sql_subjects = "CREATE TABLE IF NOT EXISTS subjects (
     subject_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     instructor_id INT UNSIGNED NULL,
@@ -53,6 +60,7 @@ $sql_subjects = "CREATE TABLE IF NOT EXISTS subjects (
         ON DELETE SET NULL
 ) ENGINE=InnoDB";
 
+// Table for Students
 $sql_students = "CREATE TABLE IF NOT EXISTS students (
     student_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     instructor_id INT UNSIGNED NULL,
@@ -67,6 +75,7 @@ $sql_students = "CREATE TABLE IF NOT EXISTS students (
     profile_image VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
+    -- Ensure a student ID is unique per instructor context
     UNIQUE KEY unique_student_per_instructor (instructor_id, student_id_number),
 
     CONSTRAINT fk_students_instructor
@@ -80,6 +89,7 @@ $sql_students = "CREATE TABLE IF NOT EXISTS students (
         ON DELETE CASCADE
 ) ENGINE=InnoDB";
 
+// Join table for Students <-> Subjects
 $sql_enrollments = "CREATE TABLE IF NOT EXISTS enrollments (
     enrollment_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     student_id INT UNSIGNED NOT NULL,
@@ -95,6 +105,7 @@ $sql_enrollments = "CREATE TABLE IF NOT EXISTS enrollments (
         ON DELETE CASCADE
 ) ENGINE=InnoDB";
 
+// Table for daily/weekly attendance records
 $sql_attendance = "CREATE TABLE IF NOT EXISTS attendance_records (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     student_id INT UNSIGNED NOT NULL,
@@ -106,6 +117,7 @@ $sql_attendance = "CREATE TABLE IF NOT EXISTS attendance_records (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
+    -- Prevent duplicate records for the same student/subject/week
     UNIQUE KEY unique_attendance (student_id, subject_id, week_number),
 
     CONSTRAINT fk_attendance_student
@@ -129,6 +141,7 @@ $sql_attendance = "CREATE TABLE IF NOT EXISTS attendance_records (
         ON DELETE SET NULL
 ) ENGINE=InnoDB";
 
+// Table for storing grades (Quizzes, Midterms, etc.)
 $sql_grades = "CREATE TABLE IF NOT EXISTS student_grades (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     student_id INT UNSIGNED NOT NULL,
@@ -158,6 +171,7 @@ $sql_grades = "CREATE TABLE IF NOT EXISTS student_grades (
         ON DELETE SET NULL
 ) ENGINE=InnoDB";
 
+// Table for configuring assessment weights/max scores (optional config table)
 $sql_assessment_settings = "CREATE TABLE IF NOT EXISTS assessment_settings (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     section_id INT UNSIGNED NOT NULL,
@@ -197,6 +211,7 @@ $tables = [
 
 echo "<h3>Database Setup Status</h3>";
 
+// 4. Loop through table array and execute creation queries
 foreach ($tables as $name => $sql) {
     if ($conn->query($sql) === TRUE) {
         echo "Table '$name': OK<br>";

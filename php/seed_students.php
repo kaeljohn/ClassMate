@@ -9,6 +9,7 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+// Arrays of sample names, courses, etc. used for random generation
 $firstNames = [
     "Aaron","Abigail","Adrian","Aileen","Albert","Alex","Alyssa","Andres","Angela","Antonio",
     "Bea","Benjamin","Bernard","Bianca","Bryan",
@@ -96,6 +97,7 @@ $courses = [
 
 $sexes = ["Male", "Female"];
 
+// 1. Fetch existing sections and subjects to link students to
 $sections = [];
 $res = $conn->query("SELECT section_id FROM sections");
 while ($row = $res->fetch_assoc()) {
@@ -108,6 +110,7 @@ while ($row = $res->fetch_assoc()) {
     $subjects[] = $row['subject_id'];
 }
 
+// 2. Determine the next Student ID Number based on the current year
 $year = date('Y');
 $res = $conn->query("
     SELECT student_id_number
@@ -125,8 +128,9 @@ $conn->begin_transaction();
 try {
 
     foreach ($sections as $section_id) {
+        // 3. Create 40 students per section
         for ($i = 0; $i < 40; $i++) {
-
+            // Randomize attributes
             $first  = $firstNames[array_rand($firstNames)];
             $last   = $lastNames[array_rand($lastNames)];
             $middle = (rand(1,100) <= 20) ? $middleInitials[array_rand($middleInitials)] : null;
@@ -135,6 +139,7 @@ try {
 
             $studentNumber = $year . str_pad($counter++, 5, "0", STR_PAD_LEFT);
 
+            // 4. Insert Student
             $stmt = $conn->prepare("
                 INSERT INTO students
                 (section_id, student_id_number, first_name, last_name, middle_initial, sex, course, status)
@@ -156,6 +161,7 @@ try {
             $student_id = $stmt->insert_id;
             $stmt->close();
 
+            // 5. Enroll student in all available subjects
             $enroll = $conn->prepare("
                 INSERT IGNORE INTO enrollments (student_id, subject_id)
                 VALUES (?, ?)

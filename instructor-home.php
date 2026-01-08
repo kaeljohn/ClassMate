@@ -1,4 +1,12 @@
 <?php
+/*
+|--------------------------------------------------------------------------
+| PHP SESSION & DATABASE CONNECTION
+|--------------------------------------------------------------------------
+| 1. Starts the session to access logged-in user data.
+| 2. Includes the database connection file.
+| 3. Verifies if the instructor is logged in; redirects if not.
+*/
 session_start();
 include 'php/db_connect.php';
 
@@ -10,38 +18,55 @@ if (!isset($_SESSION['instructor_name'])) {
 $current_instructor_id = $_SESSION['instructor_name'];
 $inst = $current_instructor_id;
 
-// Fetch Instructor Details for the Profile Section
+/*
+|--------------------------------------------------------------------------
+| INSTRUCTOR PROFILE DATA FETCHING
+|--------------------------------------------------------------------------
+| Fetches the current instructor's personal details to display in the header.
+*/
 $sql_inst = "SELECT * FROM instructors WHERE instructor_id = '$inst'";
 $res_inst = $conn->query($sql_inst);
 $instructor_data = $res_inst->fetch_assoc();
 
-// Fallback if data is missing
+// Set variables with fallbacks if data is missing
 $my_fname = $instructor_data['first_name'] ?? $inst;
 $my_lname = $instructor_data['last_name'] ?? '';
 $my_mi = $instructor_data['middle_initial'] ?? '';
 $my_sex = $instructor_data['sex'] ?? 'Male';
 
-// Construct Display Name
+// Construct formatted Display Name (e.g., Doe, John M.)
 $display_name = $my_lname . ', ' . $my_fname . ' ' . $my_mi . '.';
 if (empty($instructor_data['last_name'])) {
     $display_name = $inst; // Fallback to ID if no name set
 }
 
-// Generate unique Sched Code
+/*
+|--------------------------------------------------------------------------
+| SCHEDULE CODE GENERATION
+|--------------------------------------------------------------------------
+| Generates a unique Schedule Code for new subjects based on the current year.
+| Logic: Gets the last code starting with current year, increments the sequence.
+*/
 $currentYear = date("Y");
 $sql_last_code = "SELECT sched_code FROM subjects WHERE sched_code LIKE '$currentYear%' ORDER BY sched_code DESC LIMIT 1";
 $res_last = $conn->query($sql_last_code);
 
 if ($res_last && $res_last->num_rows > 0) {
     $last_row = $res_last->fetch_assoc();
-    $last_seq = (int) substr($last_row['sched_code'], 4);
-    $new_seq = str_pad($last_seq + 1, 5, '0', STR_PAD_LEFT);
+    $last_seq = (int) substr($last_row['sched_code'], 4); // Extract sequence number
+    $new_seq = str_pad($last_seq + 1, 5, '0', STR_PAD_LEFT); // Increment and pad
 } else {
-    $new_seq = '00001';
+    $new_seq = '00001'; // Default start sequence
 }
 $generatedSchedCode = $currentYear . $new_seq;
 
-// Data Fetching
+/*
+|--------------------------------------------------------------------------
+| DATA FETCHING FOR DASHBOARD
+|--------------------------------------------------------------------------
+| 1. Fetches all subjects assigned to this instructor.
+| 2. Fetches all sections assigned to this instructor.
+*/
 $res_subs = $conn->query("SELECT * FROM subjects WHERE instructor_id = '$inst' ORDER BY created_at DESC");
 $subjects_list = [];
 if ($res_subs && $res_subs->num_rows > 0) {
@@ -65,18 +90,24 @@ while ($row = $res_sections->fetch_assoc()) {
     <link rel="icon" type="image/svg+xml" href="svg/favicon.svg">
     <title>ClassMate | Instructor Dashboard</title>
 
+    <!-- External Fonts & CSS -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="css/instructor-home.css">
+    
+    <!-- Chart.js for Analytics -->
     <script src="js/charts.js"></script>
 
+    <!-- INTERNAL STYLES (Specific to Dashboard Components) -->
     <style>
         .modal {
             z-index: 1000;
         }
 
-        /* Higher Priority Modals (Alerts, Confirmations) */
+        /* * Z-INDEX MANAGEMENT 
+         * Ensures critical modals (alerts, input dialogs) appear above standard modals.
+         */
         #universalModal,
         #deleteModal,
         #logoutModal,
@@ -88,7 +119,7 @@ while ($row = $res_sections->fetch_assoc()) {
             z-index: 9999 !important;
         }
 
-        /* Course Modal Styles */
+        /* Course Selection Modal Styling */
         .course-cat-btn {
             text-align: left;
             padding: 12px;
@@ -118,7 +149,7 @@ while ($row = $res_sections->fetch_assoc()) {
             font-weight: 600;
         }
 
-        /* Max Score Input in Header */
+        /* Max Score Input Styling */
         .max-score-display {
             font-size: 0.7rem;
             color: #64748b;
@@ -126,7 +157,7 @@ while ($row = $res_sections->fetch_assoc()) {
             font-weight: 400;
         }
         
-        /* DISABLED QUIZ STYLING */
+        /* Disabled Quiz/Grade Input Styling */
         input.grade-input:disabled {
             background-color: #f1f5f9;
             color: #cbd5e1;
@@ -153,7 +184,12 @@ while ($row = $res_sections->fetch_assoc()) {
 
 <body>
 
-    <!-- WAVE ANIMATION BACKGROUND -->
+    <!-- 
+    |--------------------------------------------------------------------------
+    | BACKGROUND ANIMATION
+    |--------------------------------------------------------------------------
+    | SVG Wave animation for visual appeal.
+    -->
     <div class="custom-shape-divider-top-1766060304">
         <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
             <path
@@ -168,7 +204,14 @@ while ($row = $res_sections->fetch_assoc()) {
         </svg>
     </div>
 
-    <!-- Attendance Picker -->
+    <!-- 
+    |--------------------------------------------------------------------------
+    | POPUP PICKERS (ATTENDANCE)
+    |--------------------------------------------------------------------------
+    | Hidden menus for selecting attendance status (Present, Late, Excused, Absent).
+    -->
+    
+    <!-- Individual Student Attendance Picker -->
     <div id="attOptionsPicker" class="att-picker">
         <div class="att-opt" onclick="selectAttStatus('P')"><span class="dot"
                 style="background:var(--att-present)"></span> Present</div>
@@ -183,7 +226,7 @@ while ($row = $res_sections->fetch_assoc()) {
         </div>
     </div>
 
-    <!-- Mass Attendance Picker -->
+    <!-- Mass Mark Attendance (Column/Date) Picker -->
     <div id="massAttPicker" class="att-picker">
         <div
             style="padding:8px 12px; font-size:0.7rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">
@@ -198,7 +241,7 @@ while ($row = $res_sections->fetch_assoc()) {
             Absent</div>
     </div>
 
-    <!-- Mass Row Picker -->
+    <!-- Mass Mark Attendance (Row/Student) Picker -->
     <div id="massRowPicker" class="att-picker">
         <div
             style="padding:8px 12px; font-size:0.7rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">
@@ -213,7 +256,14 @@ while ($row = $res_sections->fetch_assoc()) {
             Absent</div>
     </div>
 
-    <!-- COURSE SELECTION MODAL -->
+    <!-- 
+    |--------------------------------------------------------------------------
+    | VIEW MODALS (DISPLAY & INTERACTION)
+    |--------------------------------------------------------------------------
+    | Modals that show data lists or allow complex interactions (not simple forms).
+    -->
+
+    <!-- COURSE SELECTION MODAL: For selecting student program -->
     <div id="courseSelectionModal" class="modal">
         <div class="modal-content"
             style="width: 100%; max-width: 600px; height: 80vh; display: flex; flex-direction: column;">
@@ -245,7 +295,7 @@ while ($row = $res_sections->fetch_assoc()) {
         </div>
     </div>
 
-    <!-- STUDENT GRADES BREAKDOWN MODAL -->
+    <!-- STUDENT GRADES BREAKDOWN: Shows specific student's grades in detail -->
     <div id="studentGradesModal" class="modal">
         <div class="modal-content" style="width:100%; max-width:600px;">
             <div class="modal-banner">
@@ -271,6 +321,7 @@ while ($row = $res_sections->fetch_assoc()) {
         </div>
     </div>
 
+    <!-- STUDENT PROFILE GRADES: Aggregate view of student grades for profile -->
     <div id="studentProfileGradesModal" class="modal">
         <div class="modal-content" style="width:100%; max-width:700px;">
             <div class="modal-banner">
@@ -300,7 +351,7 @@ while ($row = $res_sections->fetch_assoc()) {
         </div>
     </div>
 
-    <!-- MAX SCORE MODAL -->
+    <!-- MAX SCORE MODAL: Set total score for a quiz/exam -->
     <div id="maxScoreModal" class="modal">
         <div class="modal-content" style="max-width: 350px;">
             <div class="modal-banner">
@@ -312,9 +363,6 @@ while ($row = $res_sections->fetch_assoc()) {
                     <p id="maxScoreModalLabel" style="margin-bottom: 10px; font-weight: 500;"></p>
                     <input type="number" id="maxScoreInput" name="maxScore" min="0" required
                         style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 1.1rem;">
-                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;">
-                        Note: Set to 0 to disable this assessment.
-                    </p>
                 </div>
                 <div
                     style="padding: 15px 20px; text-align: right; background: #f8fafc; border-top: 1px solid #eee; border-radius: 0 0 12px 12px;">
@@ -326,7 +374,7 @@ while ($row = $res_sections->fetch_assoc()) {
         </div>
     </div>
 
-    <!-- Feedback Modal -->
+    <!-- FEEDBACK MODAL: Generic success/error message display -->
     <div id="universalModal" class="modal">
         <div class="modal-content" style="max-width:400px; text-align:center; padding:30px;">
             <div id="feedbackIcon" style="font-size:3rem; margin-bottom:15px;"></div>
@@ -336,7 +384,7 @@ while ($row = $res_sections->fetch_assoc()) {
         </div>
     </div>
 
-    <!-- LOGOUT CONFIRMATION MODAL -->
+    <!-- LOGOUT MODAL: Confirmation dialog for signing out -->
     <div id="logoutModal" class="modal">
         <div class="modal-content" style="max-width:400px; text-align:center; padding:30px;">
             <div style="font-size:3rem; margin-bottom:15px; color:#ef4444;"><i
@@ -350,7 +398,7 @@ while ($row = $res_sections->fetch_assoc()) {
         </div>
     </div>
 
-    <!-- SUBJECT PICKER MODAL -->
+    <!-- SUBJECT SELECTION MODAL: For choosing a subject for analytics/enrollment -->
     <div id="selectSubjectModal" class="modal">
         <div class="modal-content" style="max-width:400px;">
             <div class="modal-banner">
@@ -373,7 +421,7 @@ while ($row = $res_sections->fetch_assoc()) {
         </div>
     </div>
 
-    <!-- INSTRUCTOR CUSTOMIZE MODAL -->
+    <!-- INSTRUCTOR PROFILE EDIT MODAL -->
     <div id="customizeInstructorModal" class="modal">
         <div class="modal-content">
             <div class="modal-banner">
@@ -402,7 +450,15 @@ while ($row = $res_sections->fetch_assoc()) {
         </div>
     </div>
 
+    <!-- 
+    |--------------------------------------------------------------------------
+    | MAIN LAYOUT STRUCTURE
+    |--------------------------------------------------------------------------
+    | Contains the Sidebar (Navigation) and Main Content Area.
+    -->
     <div class="app-container">
+        
+        <!-- SIDEBAR NAVIGATION -->
         <aside class="sidebar">
             <div class="logo"><i class="fa-solid fa-graduation-cap"></i> <span>ClassMate</span></div>
             <nav style="flex-grow:1">
@@ -422,11 +478,15 @@ while ($row = $res_sections->fetch_assoc()) {
                     class="fa-solid fa-door-open"></i> <span>Logout</span></a>
         </aside>
 
+        <!-- MAIN CONTENT AREA -->
         <main class="main-content">
+            
+            <!-- TOP HEADER -->
             <header class="top-nav">
                 <h1 id="pageTitle" style="font-size: 1.1rem; font-weight: 800; color: var(--primary-dark);">My Subjects
                 </h1>
 
+                <!-- Profile Trigger -->
                 <div class="user-profile-trigger" onclick="toggleModal('customizeInstructorModal', true)">
                     <div style="text-align:right;">
                         <p style="font-weight: 800; font-size: 0.9rem;"><?php echo htmlspecialchars($display_name); ?>
@@ -437,7 +497,12 @@ while ($row = $res_sections->fetch_assoc()) {
                 </div>
             </header>
 
-            <!-- SUBJECTS -->
+            <!-- 
+            |--------------------------------------------------------------------------
+            | SECTION: SUBJECTS LOAD
+            |--------------------------------------------------------------------------
+            | Displays the list of subjects the instructor is teaching.
+            -->
             <section id="subjects" class="section-card content-section">
                 <div class="section-header">
                     <div>
@@ -497,8 +562,14 @@ while ($row = $res_sections->fetch_assoc()) {
                 </div>
             </section>
 
-            <!-- SECTIONS -->
+            <!-- 
+            |--------------------------------------------------------------------------
+            | SECTION: SECTIONS (STUDENT GROUPS)
+            |--------------------------------------------------------------------------
+            | Manages academic sections and the students within them.
+            -->
             <section id="sections" class="section-card content-section hidden">
+                <!-- VIEW 1: List of Sections -->
                 <div id="sectionListView" class="content-scroll">
                     <div class="section-header">
                         <div>
@@ -550,6 +621,7 @@ while ($row = $res_sections->fetch_assoc()) {
                     <?php endif; ?>
                 </div>
 
+                <!-- VIEW 2: Student List inside a Section -->
                 <div id="sectionDetailView" class="hidden content-scroll">
                     <div class="section-header">
                         <div>
@@ -586,8 +658,14 @@ while ($row = $res_sections->fetch_assoc()) {
                 </div>
             </section>
 
-            <!-- ATTENDANCE -->
+            <!-- 
+            |--------------------------------------------------------------------------
+            | SECTION: ATTENDANCE
+            |--------------------------------------------------------------------------
+            | Interfaces for tracking student attendance.
+            -->
             <section id="attendance" class="section-card content-section hidden">
+                <!-- VIEW 1: Section Selector -->
                 <div id="attSectionList" class="content-scroll">
                     <div class="section-header">
                         <div>
@@ -613,6 +691,7 @@ while ($row = $res_sections->fetch_assoc()) {
                         </div>
                     <?php endif; ?>
                 </div>
+                <!-- VIEW 2: Attendance Spreadsheet -->
                 <div id="attSpreadsheet" class="hidden content-scroll">
                     <div class="section-header">
                         <div>
@@ -639,8 +718,14 @@ while ($row = $res_sections->fetch_assoc()) {
                 </div>
             </section>
 
-            <!-- GRADES (QUIZZES & EXAMS) -->
+            <!-- 
+            |--------------------------------------------------------------------------
+            | SECTION: GRADES
+            |--------------------------------------------------------------------------
+            | Interfaces for recording quizzes, exams, and projects.
+            -->
             <section id="grades" class="section-card content-section hidden">
+                <!-- VIEW 1: Section Selector -->
                 <div id="gradeSectionList" class="content-scroll">
                     <div class="section-header">
                         <div>
@@ -666,6 +751,7 @@ while ($row = $res_sections->fetch_assoc()) {
                         </div>
                     <?php endif; ?>
                 </div>
+                <!-- VIEW 2: Grade Spreadsheet -->
                 <div id="gradeSpreadsheet" class="hidden content-scroll">
                     <div class="section-header">
                         <div>
@@ -692,9 +778,14 @@ while ($row = $res_sections->fetch_assoc()) {
                 </div>
             </section>
 
-            <!-- ANALYTICS -->
+            <!-- 
+            |--------------------------------------------------------------------------
+            | SECTION: ANALYTICS
+            |--------------------------------------------------------------------------
+            | Data visualization for student performance and attendance.
+            -->
             <section id="analytics" class="section-card content-section hidden">
-                <!-- VIEW 1: Main Menu -->
+                <!-- VIEW 1: Main Menu Options -->
                 <div id="analyticsMenu" class="content-scroll">
                     <div class="section-header">
                         <div>
@@ -731,7 +822,7 @@ while ($row = $res_sections->fetch_assoc()) {
                     </div>
                 </div>
 
-                <!-- VIEW 2: Section Picker -->
+                <!-- VIEW 2: Section Picker for Analytics -->
                 <div id="analyticsSectionPicker" class="hidden content-scroll">
                     <div class="section-header">
                         <div>
@@ -759,7 +850,7 @@ while ($row = $res_sections->fetch_assoc()) {
                     <?php endif; ?>
                 </div>
 
-                <!-- VIEW 3: Results -->
+                <!-- VIEW 3: Analytics Results/Charts -->
                 <div id="analyticsResult" class="hidden content-scroll">
                     <div class="section-header">
                         <div>
@@ -791,7 +882,12 @@ while ($row = $res_sections->fetch_assoc()) {
         </main>
     </div>
 
-    <!-- MODALS -->
+    <!-- 
+    |--------------------------------------------------------------------------
+    | CRUD MODALS (CREATE, READ, UPDATE, DELETE)
+    |--------------------------------------------------------------------------
+    | Modals for forms handling database insertions and updates.
+    -->
 
     <!-- Add Subject -->
     <div id="addSubjectModal" class="modal">
@@ -995,7 +1091,7 @@ while ($row = $res_sections->fetch_assoc()) {
         </div>
     </div>
 
-    <!-- STUDENT PROFILE MODAL -->
+    <!-- STUDENT PROFILE MODAL: Detailed view of a single student -->
     <div id="studentProfileModal" class="modal">
         <div class="modal-content" style="max-width:550px; max-height:90vh; overflow:hidden;">
             <div class="modal-banner" style="text-align:center; padding-bottom:35px;">
@@ -1018,6 +1114,7 @@ while ($row = $res_sections->fetch_assoc()) {
                             style="font-weight:700"></span></div>
                 </div>
 
+                <!-- Quick Enroll Feature in Profile -->
                 <div style="margin-bottom:20px; border-top:1px solid #eef2f6; padding-top:20px;">
                     <label class="form-group"><label>Quick Enroll</label></label>
                     <form id="enrollForm" style="display:flex; gap:10px;" onsubmit="handleEnroll(event)">
@@ -1042,7 +1139,7 @@ while ($row = $res_sections->fetch_assoc()) {
         </div>
     </div>
 
-    <!-- Delete Confirm -->
+    <!-- DELETE CONFIRMATION MODAL -->
     <div id="deleteModal" class="modal">
         <div class="modal-content" style="max-width:380px; text-align:center; padding:30px;">
             <div style="color:#ef4444; font-size:3.5rem; margin-bottom:15px;"><i
@@ -1056,6 +1153,7 @@ while ($row = $res_sections->fetch_assoc()) {
         </div>
     </div>
 
+    <!-- Main Logic Script -->
     <script src="js/instructor-home.js"></script>
 </body>
 </html>

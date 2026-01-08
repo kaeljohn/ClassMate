@@ -16,7 +16,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $startTs = strtotime($startTime);
     $endTs = strtotime($endTime);
 
-    // 1. Basic Validation
+    // 1. Basic Validation: Start Time vs End Time
     if ($endTs <= $startTs) {
         echo json_encode([
             'status' => 'error', 
@@ -25,8 +25,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
 
+    // 2. Duration Check: Limit class length to 3 hours (10,800 seconds)
     $duration = $endTs - $startTs;
-    // Updated duration limit from 2 hours (7200s) to 3 hours (10800s)
     if ($duration > 10800) {
         echo json_encode([
             'status' => 'error', 
@@ -35,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
 
-    // 2. Check for Duplicate Subject Code
+    // 3. Duplicate Code Check: Ensure Subject Code is unique for this instructor
     $checkSql = "SELECT subject_id FROM subjects WHERE instructor_id = ? AND subject_code = ?";
     $checkStmt = $conn->prepare($checkSql);
     $checkStmt->bind_param("ss", $instructor, $subjectCode);
@@ -52,7 +52,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
     $checkStmt->close();
 
-    // 3. Check for Schedule Conflicts (Day & Time Overlap)
+    // 4. Schedule Conflict Detection
+    // Logic: Look for any existing subject on the SAME day where:
+    // (Existing Start < New End) AND (Existing End > New Start)
     $conflictSql = "SELECT subject_id, subject_code, start_time, end_time FROM subjects 
                     WHERE instructor_id = ? 
                     AND sched_day = ? 
@@ -75,7 +77,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
     $conflictStmt->close();
 
-    // 4. Insert New Subject
+    // 5. Insert the new subject
     $sql = "INSERT INTO subjects (instructor_id, sched_code, subject_code, subject_name, start_time, end_time, sched_day) 
             VALUES (?, ?, ?, ?, ?, ?, ?)";
     

@@ -9,6 +9,7 @@ if (!isset($_SESSION['instructor_name'])) {
     exit();
 }
 
+// 1. Get Inputs
 $student_id  = $_POST['student_id']  ?? null;
 $section_id  = $_POST['section_id']  ?? null;
 $subject_id  = $_POST['subject_id']  ?? null;
@@ -17,6 +18,7 @@ $status      = $_POST['status']      ?? 'NONE';
 $instructor_id = $_SESSION['instructor_name']; 
 
 if ($student_id && $section_id && $week && $subject_id) {
+    // 2. Insert or Update using ON DUPLICATE KEY
     $stmt = $conn->prepare("INSERT INTO attendance_records (student_id, section_id, subject_id, instructor_id, week_number, status) 
                             VALUES (?, ?, ?, ?, ?, ?) 
                             ON DUPLICATE KEY UPDATE status = VALUES(status), instructor_id = VALUES(instructor_id)");

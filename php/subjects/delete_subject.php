@@ -6,6 +6,7 @@ include '../db_connect.php';
 if (isset($_GET['id'])) {
     $id = $_GET['id'];
     
+    // 1. Delete the subject record
     $stmt = $conn->prepare("DELETE FROM subjects WHERE subject_id = ?");
     $stmt->bind_param("i", $id);
 

@@ -3,12 +3,15 @@ session_start();
 include '../db_connect.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // 1. Security Check: Ensure user is logged in
     if (!isset($_SESSION['instructor_name'])) {
         echo json_encode(['status' => 'error', 'message' => 'Unauthorized access.']);
         exit;
     }
 
     $instructor_id = $_SESSION['instructor_name'];
+    
+    // 2. Retrieve inputs using null coalescing operator for safety
     $section_id = $_POST['section_id'] ?? null;
     $student_id_number = $_POST['studentIdNumber'] ?? '';
     $first_name = $_POST['firstName'] ?? '';
@@ -18,11 +21,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $course = $_POST['course'] ?? '';
     $status = $_POST['status'] ?? 'Regular';
 
+    // 3. Validate required fields
     if (empty($section_id) || empty($student_id_number) || empty($first_name) || empty($last_name) || empty($course)) {
         echo json_encode(['status' => 'error', 'message' => 'Please fill in all required fields.']);
         exit;
     }
 
+    // 4. Duplicate Check: Prevent adding the same Student ID twice under the same instructor
     $check_sql = "SELECT s.student_id 
                   FROM students s
                   INNER JOIN sections sec ON s.section_id = sec.section_id
@@ -40,6 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     $check_stmt->close();
 
+    // 5. Insert the new student
     $sql = "INSERT INTO students (
                 section_id, 
                 student_id_number, 

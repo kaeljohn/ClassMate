@@ -11,6 +11,7 @@ if ($conn->connect_error) {
 
 $weeks = 18;
 
+// 1. Define weighted probabilities for attendance status
 // Attendance weights
 $attendanceWeights = [
     'P' => 70, // Present
@@ -36,7 +37,7 @@ function weightedRandom(array $weights) {
     return array_key_first($weights);
 }
 
-
+// 2. Fetch all sections, students, and subjects
 $sections = [];
 $res = $conn->query("SELECT section_id FROM sections");
 while ($row = $res->fetch_assoc()) {
@@ -53,6 +54,7 @@ try {
 
     foreach ($sections as $section_id) {
 
+        // 3. Generate Attendance Records
         $students = [];
         $res = $conn->query("
             SELECT student_id 
@@ -99,6 +101,7 @@ try {
         }
         $attStmt->close();
 
+        // 4. Generate Grades (Quizzes, Midterms, Finals)
         $gradeStmt = $conn->prepare("
             INSERT IGNORE INTO student_grades
             (student_id, section_id, subject_id, instructor_id, assessment_type, score)

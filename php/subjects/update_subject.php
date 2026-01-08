@@ -14,6 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $startTs = strtotime($startTime);
     $endTs = strtotime($endTime);
 
+    // 1. Time Validation
     if ($endTs <= $startTs) {
         echo json_encode([
             'status' => 'error', 
@@ -22,6 +23,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
 
+    // 2. Duration Limit (Note: This file limits to 2 hours/7200s, slightly different from add_subject)
     $duration = $endTs - $startTs;
     if ($duration > 7200) {
         echo json_encode([
@@ -31,6 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
 
+    // 3. Update Record
     $sql = "UPDATE subjects SET 
             sched_code = ?, 
             subject_code = ?, 

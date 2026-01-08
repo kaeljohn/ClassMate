@@ -1,17 +1,35 @@
+/**
+ * ==========================================
+ * GLOBAL STATE VARIABLES
+ * ==========================================
+ * These variables track the current state of the application,
+ * such as the active section, subject, or mode (Attendance vs Grades).
+ */
 let currentSection = null;
 let currentSubject = null;
-let deleteTarget = { id: null, type: null };
-let activeCellTarget = null;
-let massTargetWeek = null;
-let massRowTargetId = null; 
+let deleteTarget = { id: null, type: null }; // Stores info for the deletion confirmation modal
+let activeCellTarget = null; // Tracks which table cell is currently being edited
+let massTargetWeek = null; // Target week for column-based mass updates
+let massRowTargetId = null; // Target student ID for row-based mass updates
 let currentAnalyticsType = null;
-let analyticsChartInstance = null;
+let analyticsChartInstance = null; // Stores Chart.js instance to allow destruction before re-rendering
 let isAttendanceMode = false; 
 let isAnalyticsMode = false; 
 
+// Grade-specific state
 let currentMaxScores = {}; 
 let currentMaxScoreType = null;
 
+// Target input for the course selection modal (e.g., adding a student vs editing)
+let courseModalTargetInput = null; 
+
+/**
+ * ==========================================
+ * COURSE DATA STRUCTURE
+ * ==========================================
+ * Static data defining the hierarchy of Colleges -> Courses.
+ * Used for the course selection modal navigation.
+ */
 const courseData = {
     "Graduate School and Open Learning College": {
         courses: ["PhD in Agriculture", "PhD in Education", "PhD in Management", "Master in Business Administration", "Master of Agriculture", "Master of Arts in Education", "Master of Engineering", "Master of Management", "Master of Professional Studies", "MS Agriculture", "MS Biology", "MS Food Science", "Master in Information Technology"]
@@ -31,25 +49,38 @@ const courseData = {
     }
 };
 
-let courseModalTargetInput = null; 
+/**
+ * ==========================================
+ * UTILITY FUNCTIONS
+ * ==========================================
+ */
 
+// Toggles visibility of a modal by ID
 function toggleModal(id, show) { 
     const el = document.getElementById(id);
     if(el) el.style.display = show ? 'flex' : 'none'; 
 }
 
+// Redirects to logout script
 function confirmLogout() {
     window.location.href = 'php/logout.php';
 }
 
+/**
+ * ==========================================
+ * ENTRY POINTS (MODE SELECTION)
+ * ==========================================
+ */
+
+// Triggered when user clicks a section in Attendance tab
 function prepareAttendanceSheet(sec) {
     currentSection = sec;
     isAttendanceMode = true;
     isAnalyticsMode = false;
-    toggleModal('selectSubjectModal', true);
+    toggleModal('selectSubjectModal', true); // Ask user to pick a subject first
 }
 
-// --- GRADES ---
+// Triggered when user clicks a section in Grades tab
 function prepareGradeSheet(sec) {
     currentSection = sec;
     isAttendanceMode = false;
@@ -57,7 +88,8 @@ function prepareGradeSheet(sec) {
     toggleModal('selectSubjectModal', true);
 }
 
-// --- UNIVERSAL SUBJECT HANDLER ---
+// Universal handler for the Subject Selection Modal
+// Routes the user to the correct view (Analytics, Attendance, or Grades)
 function handleUniversalSubjectSelect(sub) {
     currentSubject = sub;
     toggleModal('selectSubjectModal', false);
@@ -71,20 +103,30 @@ function handleUniversalSubjectSelect(sub) {
     }
 }
 
-// --- ATTENDANCE LOGIC ---
+/**
+ * ==========================================
+ * ATTENDANCE MODULE
+ * ==========================================
+ */
+
+// Initializes the attendance spreadsheet view
 function openAttendanceSheet(sec, sub) {
+    // UI switching
     document.getElementById('attSectionList').classList.add('hidden');
     document.getElementById('attSpreadsheet').classList.remove('hidden');
     
+    // Set Header Info
     document.getElementById('attTitle').innerText = sec.section_name;
     document.getElementById('attMeta').innerText = `${sub.subject_code} (${sub.sched_day}) | ${sec.semester}`;
     
-    saveState('attendance', sec);
+    saveState('attendance', sec); // Persist state
 
+    // Generate Table Headers (Student Name + Weeks 1-18)
     const headerRow = document.getElementById('attTableHeader');
     headerRow.innerHTML = '<th class="fixed-col">Student Name</th>';
     for (let w = 1; w <= 18; w++) headerRow.innerHTML += `<th onclick="showMassPicker(this, ${w})" style="cursor:pointer">W${w}</th>`;
 
+    // Fetch Students and Render Rows
     fetch(`php/attendance/get_enrolled_students.php?section_id=${sec.section_id}&subject_id=${sub.subject_id}`)
         .then(r => r.json())
         .then(res => {
@@ -97,12 +139,14 @@ function openAttendanceSheet(sec, sub) {
                 sorted.forEach(s => {
                     const tr = document.createElement('tr');
                     tr.id = `att-row-${s.student_id}`;
+                    // Row picker on name click, Cell picker on week click
                     let html = `<td class="fixed-col" style="cursor:pointer" onclick="showRowPicker(this, ${s.student_id})"><strong>${s.last_name}, ${s.first_name}</strong></td>`;
                     for (let w = 1; w <= 18; w++) html += `<td><button class="att-cell empty" id="cell-${s.student_id}-${w}" onclick="showAttPicker(this, ${s.student_id}, ${w})">-</button></td>`;
                     tr.innerHTML = html;
                     tbody.appendChild(tr);
                 });
 
+                // Fetch existing attendance records and fill grid
                 fetch(`php/attendance/get_attendance.php?section_id=${sec.section_id}&subject_id=${sub.subject_id}`)
                     .then(r => r.json())
                     .then(attRes => {
@@ -122,27 +166,36 @@ function openAttendanceSheet(sec, sub) {
         });
 }
 
+// Shows the floating popup to change a specific cell's status
 function showAttPicker(btn, studentId, week) {
     const picker = document.getElementById('attOptionsPicker');
     const rect = btn.getBoundingClientRect();
     activeCellTarget = { studentId, week, element: btn };
+    
+    // Position picker near the clicked cell
     picker.style.display = 'flex';
     picker.style.top = (rect.bottom + window.scrollY + 5) + 'px';
     picker.style.left = (rect.left + window.scrollX) + 'px';
+    
+    // Close on click outside
     const closer = (e) => { if (!picker.contains(e.target) && e.target !== btn) { picker.style.display = 'none'; document.removeEventListener('mousedown', closer); } };
     document.addEventListener('mousedown', closer);
 }
 
+// Applies the selected status (P, A, L, E) to the active cell
 function selectAttStatus(status) {
     if (!activeCellTarget) return;
     const { studentId, week, element } = activeCellTarget;
     document.getElementById('attOptionsPicker').style.display = 'none';
+    
+    // Update UI immediately
     element.className = 'att-cell ' + (status === 'NONE' ? 'empty' : status.toLowerCase());
     element.innerText = (status === 'NONE' ? '-' : status);
     
     saveAttendanceRecord(studentId, week, status);
 }
 
+// API Call to save attendance
 function saveAttendanceRecord(sid, week, status) {
     const fd = new FormData();
     fd.append('student_id', sid); 
@@ -152,6 +205,8 @@ function saveAttendanceRecord(sid, week, status) {
     fd.append('status', status);
     fetch('php/attendance/save_attendance.php', { method: 'POST', body: fd });
 }
+
+// --- Mass Updates (Column/Week) ---
 
 function showMassPicker(th, week) {
     massTargetWeek = week;
@@ -164,6 +219,7 @@ function showMassPicker(th, week) {
     document.addEventListener('mousedown', closer);
 }
 
+// Apply status to entire column (Week)
 function massMark(status) {
     document.getElementById('massAttPicker').style.display = 'none';
     const rows = document.querySelectorAll('#attTableBody tr');
@@ -179,6 +235,8 @@ function massMark(status) {
     });
 }
 
+// --- Mass Updates (Row/Student) ---
+
 function showRowPicker(td, studentId) {
     massRowTargetId = studentId;
     const picker = document.getElementById('massRowPicker');
@@ -190,6 +248,7 @@ function showRowPicker(td, studentId) {
     document.addEventListener('mousedown', closer);
 }
 
+// Apply status to entire row (All weeks for one student)
 function massMarkRow(status) {
     document.getElementById('massRowPicker').style.display = 'none';
     if (!massRowTargetId) return;
@@ -205,7 +264,12 @@ function massMarkRow(status) {
     showFeedback('success', 'Row Update', `Student marked as ${status} for all weeks.`);
 }
 
-// --- GRADE SHEET LOGIC ---
+/**
+ * ==========================================
+ * GRADE SHEET MODULE
+ * ==========================================
+ */
+
 function openGradeSheet(sec, sub) {
     document.getElementById('gradeSectionList').classList.add('hidden');
     document.getElementById('gradeSpreadsheet').classList.remove('hidden');
@@ -213,6 +277,7 @@ function openGradeSheet(sec, sub) {
     document.getElementById('gradeMeta').innerText = sub.subject_name;
     saveState('grades', sec);
 
+    // Fetch Max Scores configuration for this subject before rendering
     currentMaxScores = {}; 
     fetch(`php/quizandexams/get_max_scores.php?section_id=${sec.section_id}&subject_id=${sub.subject_id}`)
         .then(r => r.json())
@@ -230,6 +295,7 @@ function renderGradeSheet(sec, sub) {
     const header = document.getElementById('gradeTableHeader');
     let html = '<th class="fixed-col">Student Name</th>';
     
+    // Helper to generate dynamic headers with max score display
     const genHead = (lbl, type) => {
         let max = currentMaxScores[type];
         if (max === undefined) max = 100;
@@ -240,11 +306,13 @@ function renderGradeSheet(sec, sub) {
                 </th>`;
     };
 
+    // Columns: Quiz 1-10, Midterm, Finals
     for (let i = 1; i <= 10; i++) html += genHead(`Q${i}`, `Quiz${i}`);
     html += genHead('Midterm', 'Midterm');
     html += genHead('Finals', 'Finals');
     header.innerHTML = html;
 
+    // Fetch Students
     fetch(`php/attendance/get_enrolled_students.php?section_id=${sec.section_id}&subject_id=${sub.subject_id}`).then(r => r.json()).then(res => {
         const tbody = document.getElementById('gradeTableBody');
         tbody.innerHTML = '';
@@ -252,10 +320,12 @@ function renderGradeSheet(sec, sub) {
             res.data.sort((a, b) => a.last_name.localeCompare(b.last_name)).forEach(s => {
                 let html = `<tr><td class="fixed-col"><strong>${s.last_name}, ${s.first_name}</strong></td>`;
                 
+                // Helper to generate input cells
                 const genCell = (type) => {
                     let max = currentMaxScores[type];
                     if (max === undefined) max = 100;
                     
+                    // Disable input if max score is 0
                     const isDisabled = (max === 0) ? 'disabled style="background:#f1f5f9; cursor:not-allowed;"' : '';
                     
                     return `<td><input class="grade-input" type="number" id="g-${s.student_id}-${type}" onchange="saveGrade(${s.student_id}, '${type}', this)" ${isDisabled}></td>`;
@@ -269,7 +339,7 @@ function renderGradeSheet(sec, sub) {
                 tbody.innerHTML += html;
             });
 
-            // Fill existing grades
+            // Populate existing grades
             fetch(`php/quizandexams/get_grades.php?section_id=${sec.section_id}&subject_id=${sub.subject_id}`).then(r => r.json()).then(d => {
                 if (d.status === 'success') d.data.forEach(g => {
                     const field = document.getElementById(`g-${g.student_id}-${g.assessment_type}`);
@@ -282,6 +352,9 @@ function renderGradeSheet(sec, sub) {
     });
 }
 
+// --- Grade Logic Helpers ---
+
+// Opens modal to set max score for a specific column
 function promptMaxScore(type) {
     currentMaxScoreType = type;
     const currentMax = currentMaxScores[type] !== undefined ? currentMaxScores[type] : 100;
@@ -292,6 +365,7 @@ function promptMaxScore(type) {
     toggleModal('maxScoreModal', true);
 }
 
+// Saves the new max score config
 function saveMaxScoreFromModal(e) {
     e.preventDefault();
     const newMax = document.getElementById('maxScoreInput').value;
@@ -315,6 +389,7 @@ function saveMaxScoreFromModal(e) {
                 document.getElementById(`header-max-${type}`).innerText = `/ ${val}`;
                 toggleModal('maxScoreModal', false);
                 
+                // Re-render to update disabled states if max went from 0 -> >0
                 renderGradeSheet(currentSection, currentSubject);
             } else {
                 showFeedback('error', 'Save Failed', "Failed to save max score.");
@@ -322,10 +397,12 @@ function saveMaxScoreFromModal(e) {
         });
 }
 
+// Validates and saves a single grade cell
 function saveGrade(sid, type, inputEl) {
     const max = currentMaxScores[type] || 100;
     let val = parseFloat(inputEl.value);
 
+    // Validation
     if (val < 0) { inputEl.value = 0; val = 0; }
     if (val > max) { 
         showFeedback('error', 'Invalid Score', `Score cannot exceed maximum of ${max}`);
@@ -342,8 +419,14 @@ function saveGrade(sid, type, inputEl) {
     fetch('php/quizandexams/save_grade.php', { method: 'POST', body: fd });
 }
 
-// --- COURSE MODALS ---
-let navStack = []; 
+/**
+ * ==========================================
+ * COURSE SELECTION MODAL LOGIC
+ * ==========================================
+ * Handles the hierarchical navigation through course categories.
+ */
+
+let navStack = []; // History stack for "Back" button functionality
 
 function openCourseModal(targetType) {
     courseModalTargetInput = targetType; 
@@ -371,6 +454,7 @@ function updateBreadcrumb(text) {
     document.getElementById('courseBackBtn').disabled = (text === 'Main Categories');
 }
 
+// 1. Level: Main Categories (e.g., Graduate, Undergraduate)
 function renderMainCategories() {
     navStack = [];
     document.getElementById('mainCategoryView').classList.remove('hidden');
@@ -388,6 +472,7 @@ function renderMainCategories() {
     });
 }
 
+// 2. Level: Colleges or Direct Course List
 function handleCategorySelect(catName, pushStack = true) {
     if(pushStack) navStack.push(catName);
     
@@ -401,6 +486,7 @@ function handleCategorySelect(catName, pushStack = true) {
     }
 }
 
+// 3. Level: Subcategories (Colleges)
 function renderSubCategories(subcats, parentName) {
     document.getElementById('subCategoryView').classList.remove('hidden');
     document.getElementById('courseListView').classList.add('hidden');
@@ -418,6 +504,7 @@ function handleSubCatSelect(subName, parentName) {
     renderCourseList(courses, subName);
 }
 
+// 4. Level: Final Course List
 function renderCourseList(courses, title) {
     document.getElementById('subCategoryView').classList.add('hidden');
     document.getElementById('courseListView').classList.remove('hidden');
@@ -430,6 +517,7 @@ function renderCourseList(courses, title) {
     });
 }
 
+// Search functionality for courses
 function filterCourses() {
     const val = document.getElementById('courseSearchInput').value.toLowerCase().trim();
     
@@ -450,6 +538,7 @@ function filterCourses() {
     let results = [];
     const terms = val.split(' ').filter(t => t.length > 0);
 
+    // Deep search through nested courseData object
     Object.keys(courseData).forEach(main => {
         if(courseData[main].courses) {
             courseData[main].courses.forEach(c => {
@@ -484,6 +573,7 @@ function filterCourses() {
     }
 }
 
+// Final Selection Handler
 function selectCourse(courseName) {
     const targetId = courseModalTargetInput === 'add' ? 'add_student_course_display' : 'edit_stu_course';
     const input = document.getElementById(targetId);
@@ -491,13 +581,26 @@ function selectCourse(courseName) {
     toggleModal('courseSelectionModal', false);
 }
 
-// --- ANALYTICS ---
+/**
+ * ==========================================
+ * ANALYTICS MODULE
+ * ==========================================
+ */
+
+// Step 1: User selects what type of analytics they want
 function selectAnalyticsType(type) {
     currentAnalyticsType = type;
     document.getElementById('analyticsMenu').classList.add('hidden');
     document.getElementById('analyticsSectionPicker').classList.remove('hidden');
     document.getElementById('analyticsResult').classList.add('hidden');
-    const titles = { 'low_attendance': 'Low Attendance', 'student_averages': 'Overall Grades', 'ranking': 'Student Ranking', 'attendance_chart': 'Attendance Overview', 'late_absent': 'Late & Absent' };
+    
+    const titles = { 
+        'low_attendance': 'Low Attendance', 
+        'student_averages': 'Overall Grades', 
+        'ranking': 'Student Ranking', 
+        'attendance_chart': 'Attendance Overview', 
+        'late_absent': 'Late & Absent' 
+    };
     document.getElementById('anaPickerTitle').innerText = (titles[type] || 'Analysis') + " - Select Section";
 }
 
@@ -514,26 +617,30 @@ function backToAnaPicker() {
     document.getElementById('analyticsResult').classList.add('hidden');
 }
 
+// Step 2: User selects a section
 function loadAnalyticsData(sec) {
     if (!currentAnalyticsType) return;
     currentSection = sec;
 
     const typesRequiringSubject = ['low_attendance', 'attendance_chart', 'late_absent'];
     
+    // Some analytics are Subject-specific, some are Section-wide
     if (typesRequiringSubject.includes(currentAnalyticsType)) {
         isAnalyticsMode = true;
         isAttendanceMode = false;
-        toggleModal('selectSubjectModal', true);
+        toggleModal('selectSubjectModal', true); // Ask for subject
     } else {
-        fetchAndRenderAnalytics(sec, null);
+        fetchAndRenderAnalytics(sec, null); // Proceed with just section
     }
 }
 
+// Step 3 (Optional): User selects a subject
 function loadSubjectAnalytics(sub) {
     currentSubject = sub;
     fetchAndRenderAnalytics(currentSection, sub);
 }
 
+// Fetch Data and Prepare View
 function fetchAndRenderAnalytics(sec, sub) {
     document.getElementById('analyticsSectionPicker').classList.add('hidden');
     document.getElementById('analyticsResult').classList.remove('hidden');
@@ -566,6 +673,7 @@ function fetchAndRenderAnalytics(sec, sub) {
         });
 }
 
+// Render the fetched data into specific table formats or charts
 function renderAnalytics(data, type) {
     const table = document.getElementById('anaResultTable');
     const chartArea = document.getElementById('anaChartArea');
@@ -578,6 +686,7 @@ function renderAnalytics(data, type) {
         return;
     }
 
+    // --- CASE 1: Low Attendance (<75%) ---
     if (type === 'low_attendance') {
         document.getElementById('anaResultMeta').innerText = "Students below 75% attendance threshold (Selected Subject)";
         html = `<thead><tr><th>Student Name</th><th>Present Days</th><th>Attendance Rate</th><th>Status</th></tr></thead><tbody>`;
@@ -587,6 +696,7 @@ function renderAnalytics(data, type) {
         });
         table.innerHTML = html;
     }
+    // --- CASE 2: Student Averages (List View) ---
     else if (type === 'student_averages') {
         document.getElementById('anaResultMeta').innerText = "Class List - View Student Profile";
         html = `<thead><tr><th>Student Name</th><th>Actions</th></tr></thead><tbody>`;
@@ -603,6 +713,7 @@ function renderAnalytics(data, type) {
         });
         table.innerHTML = html;
     }
+    // --- CASE 3: Rankings ---
     else if (type === 'ranking') {
         document.getElementById('anaResultMeta').innerText = "Top Students (GWA across all subjects)";
         html = `<thead><tr><th>Rank</th><th>Student Name</th><th>GWA</th></tr></thead><tbody>`;
@@ -614,16 +725,21 @@ function renderAnalytics(data, type) {
         });
         table.innerHTML = html;
     }
+    // --- CASE 4: Attendance Chart (Pie Chart) ---
     else if (type === 'attendance_chart') {
         document.getElementById('anaResultMeta').innerText = "Attendance Overview (Selected Subject)";
         contentArea.classList.add('hidden'); chartArea.classList.remove('hidden');
+        
         const labels = ['Present', 'Late', 'Excused', 'Absent'];
         const counts = [0, 0, 0, 0];
         const colors = ['#22c55e', '#f97316', '#1e293b', '#ef4444'];
+        
         data.forEach(item => { if (item.status === 'P') counts[0] = item.count; if (item.status === 'L') counts[1] = item.count; if (item.status === 'E') counts[2] = item.count; if (item.status === 'A') counts[3] = item.count; });
+        
         const ctx = document.getElementById('attendanceChartCanvas').getContext('2d');
         analyticsChartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: labels, datasets: [{ data: counts, backgroundColor: colors, borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
     }
+    // --- CASE 5: Late & Absent Counts ---
     else if (type === 'late_absent') {
         document.getElementById('anaResultMeta').innerText = "Late & Absent Records (Selected Subject)";
         html = `<thead><tr><th>Student Name</th><th>Late Count</th><th>Absent Count</th><th>Total Issues</th></tr></thead><tbody>`;
@@ -670,7 +786,13 @@ function openStudentProfileAnalytics(studentId, studentName) {
         });
 }
 
-// --- GENERAL ---
+/**
+ * ==========================================
+ * GENERAL UTILITIES
+ * ==========================================
+ */
+
+// Highlights table row based on search input
 function searchScroll(e, tbodyId) {
     const val = e.target.value.toLowerCase();
     if (!val) return;
@@ -688,6 +810,7 @@ function searchScroll(e, tbodyId) {
     }
 }
 
+// Universal Feedback Modal (Success/Error messages)
 function showFeedback(type, title, msg) {
     const m = document.getElementById('universalModal');
     document.getElementById('feedbackIcon').innerHTML = type === 'success' ? '<i class="fa-solid fa-check-circle" style="color:var(--att-present)"></i>' : '<i class="fa-solid fa-circle-xmark" style="color:var(--att-absent)"></i>';
@@ -697,6 +820,7 @@ function showFeedback(type, title, msg) {
     m.style.display = 'flex';
 }
 
+// Persist current tab/section in localStorage so page reloads don't reset view
 function saveState(tab, sec = null) { 
     localStorage.setItem('cm_state', JSON.stringify({ tab, sec })); 
 }
@@ -712,6 +836,7 @@ function restoreState() {
     }
 }
 
+// Sidebar Navigation Handling
 document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', (e) => {
         if (item.getAttribute('href') !== '#') return;
@@ -724,6 +849,8 @@ document.querySelectorAll('.nav-item').forEach(item => {
         document.querySelectorAll('.content-section').forEach(s => s.classList.add('hidden'));
         document.getElementById(item.dataset.target).classList.remove('hidden');
         document.getElementById('pageTitle').innerText = item.querySelector('span').innerText;
+        
+        // Tab-specific resets
         if (item.dataset.target === 'sections') showSectionList();
         if (item.dataset.target === 'attendance') backToAttSections();
         if (item.dataset.target === 'grades') backToGradeSections();
@@ -733,7 +860,15 @@ document.querySelectorAll('.nav-item').forEach(item => {
     });
 });
 
+/**
+ * ==========================================
+ * SECTION & STUDENT MANAGEMENT
+ * ==========================================
+ * Logic for the "Sections" tab: adding students, enrolling subjects, editing details.
+ */
+
 function showSectionList() { document.getElementById('sectionListView').classList.remove('hidden'); document.getElementById('sectionDetailView').classList.add('hidden'); }
+
 function viewSection(sec) {
     currentSection = sec;
     document.getElementById('sectTitle').innerText = sec.section_name;
@@ -747,13 +882,17 @@ function viewSection(sec) {
     saveState('sections', sec);
     refreshStudents();
 }
+
+// Navigation helpers
 function backToAttSections() { document.getElementById('attSectionList').classList.remove('hidden'); document.getElementById('attSpreadsheet').classList.add('hidden'); saveState('attendance'); }
 function backToGradeSections() { document.getElementById('gradeSectionList').classList.remove('hidden'); document.getElementById('gradeSpreadsheet').classList.add('hidden'); saveState('grades'); }
 
+// Universal form submit handler (Subjects/Sections)
 function handleFormSubmit(e, url, mid, isStudentUpdate = false) {
     e.preventDefault();
     const formData = new FormData(e.target);
     
+    // Time validation for Subjects
     if (mid === 'addSubjectModal' || mid === 'editSubjectModal') {
         const start = formData.get('startTime');
         const end = formData.get('endTime');
@@ -793,6 +932,7 @@ function handleStudentAdd(e) {
     });
 }
 
+// Re-fetches student list for the current section
 function refreshStudents() {
     document.getElementById('add_student_sec_id').value = currentSection.section_id;
     fetch(`php/sections/get_students.php?section_id=${currentSection.section_id}`).then(r => r.json()).then(res => {
@@ -819,6 +959,7 @@ function handleEnroll(e) {
     });
 }
 
+// Pre-fill edit modals
 function openEditSubject(s) { 
     document.getElementById('edit_sub_id').value = s.subject_id; 
     document.getElementById('edit_sub_sched').value = s.sched_code; 
@@ -844,6 +985,7 @@ function openEditStudent(s) {
     toggleModal('editStudentModal', true);
 }
 
+// Student Profile Modal (Shows enrolled subjects)
 function openProfile(s) {
     toggleModal('studentProfileModal', true);
     let mi = s.middle_initial ? s.middle_initial + '.' : '';
@@ -894,9 +1036,21 @@ function removeSubject(stuId, subId) {
         });
 }
 
+// Deletion Logic
 function askDelete(id, type) { deleteTarget = { id, type }; toggleModal('deleteModal', true); }
-document.getElementById('confirmDeleteBtn').onclick = () => { const url = deleteTarget.type === 'subject' ? 'php/subjects/delete_subject.php' : (deleteTarget.type === 'section' ? 'php/sections/delete_section.php' : 'php/sections/delete_student.php'); fetch(`${url}?id=${deleteTarget.id}`).then(() => { toggleModal('deleteModal', false); if (deleteTarget.type === 'student') refreshStudents(); else window.location.reload(); }); };
+
+document.getElementById('confirmDeleteBtn').onclick = () => { 
+    const url = deleteTarget.type === 'subject' ? 'php/subjects/delete_subject.php' : (deleteTarget.type === 'section' ? 'php/sections/delete_section.php' : 'php/sections/delete_student.php'); 
+    fetch(`${url}?id=${deleteTarget.id}`).then(() => { 
+        toggleModal('deleteModal', false); 
+        if (deleteTarget.type === 'student') refreshStudents(); 
+        else window.location.reload(); 
+    }); 
+};
+
+// Client-side search filters
 function filterStudentTable() { const val = document.getElementById('studentSearchInput').value.toLowerCase(); document.querySelectorAll('#studentTableBody tr').forEach(r => r.style.display = r.innerText.toLowerCase().includes(val) ? '' : 'none'); }
 function filterStudentTableAnalytics() { const val = document.getElementById('AnastudentSearchInput').value.toLowerCase(); document.querySelectorAll('#anaResultTableBody').forEach(r => r.style.display = r.innerText.toLowerCase().includes(val) ? '' : 'none'); }
 
+// Init
 window.onload = restoreState;

@@ -16,6 +16,7 @@ $max_score = $_POST['max_score'] ?? null;
 
 if ($section_id && $assessment_type && isset($max_score) && $max_score !== '') {
     
+    // 1. Perform Insert/Update (Identical logic to save_max_score.php)
     $stmt = $conn->prepare("INSERT INTO assessment_settings (section_id, subject_id, instructor_id, assessment_type, max_score) 
                             VALUES (?, ?, ?, ?, ?) 
                             ON DUPLICATE KEY UPDATE max_score = VALUES(max_score), instructor_id = VALUES(instructor_id)");
